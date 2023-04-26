@@ -20,19 +20,19 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(phone: string, password: string): Promise<User | any> {
-    const user = (await this.userService.getUserByPhone(phone)) as User;
-
-    const passwordMatch = await bcrypt.compare(password, user.pin);
-
-    if (user && passwordMatch) {
-      return user;
-    }
+    const user = await this.userService.getUserByPhone(phone);
 
     if (!user) {
       throw new HttpException(
         'No Account Found Under This Phone Number',
         HttpStatus.NOT_FOUND,
       );
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.pin);
+
+    if (user && passwordMatch) {
+      return user;
     }
 
     if (!passwordMatch) {
