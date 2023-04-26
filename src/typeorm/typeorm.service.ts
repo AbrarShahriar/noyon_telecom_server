@@ -22,9 +22,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       type: 'postgres',
       host: this.config.get<string>('DB_HOST'),
       port: this.config.get<number>('DB_PORT'),
-      database: this.config.get<string>('DB_NAME'),
-      username: this.config.get<string>('DB_USERNAME'),
-      password: this.config.get<string>('DB_PASSWORD'),
+      url: this.config.get<string>('DB_URL'),
       entities: [
         User,
         Offer,
@@ -37,6 +35,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         UserHistory,
         AdminSetting,
       ],
+      ssl: true,
       migrations: ['dist/migrations/*.{ts,js}'],
       migrationsTableName: 'migrations',
       logging: true,
