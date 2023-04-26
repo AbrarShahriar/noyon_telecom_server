@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { AdminSetting } from 'src/admin_settings/entity/admin_settings.entity';
 import { MembershipBuyReq } from 'src/membership_buy_req/entity/membership_buy_req.entity';
 import { Moderator } from 'src/moderator/entity/moderator.entity';
 import { Offer } from 'src/offer/entity/offer.entity';
@@ -9,6 +10,7 @@ import { Recharge } from 'src/recharge/entity/recharge.entity';
 import { RechargeBuyReq } from 'src/recharge_buy_req/entity/recharge_buy_req.entity';
 import { TopupReq } from 'src/topup_req/entity/topup_req.entity';
 import { User } from 'src/user/entity/user.entity';
+import { UserHistory } from 'src/user_history/entity/user_history.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -32,6 +34,8 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         RechargeBuyReq,
         MembershipBuyReq,
         Moderator,
+        UserHistory,
+        AdminSetting,
       ],
       migrations: ['dist/migrations/*.{ts,js}'],
       migrationsTableName: 'migrations',

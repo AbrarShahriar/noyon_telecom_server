@@ -12,3 +12,15 @@ export class CreateModeratorDto {
   @IsString()
   password: string;
 }
+
+export class LoginModeratorDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  username: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  password: string;
+}

@@ -1,9 +1,12 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import 'reflect-metadata';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
+import * as passport from 'passport';
+import { JwtGuard } from './auth/guards/jwt.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,6 +14,9 @@ async function bootstrap() {
   const config: ConfigService = app.get(ConfigService);
   const port: number = config.get<number>('PORT');
   const origin: string = config.get<string>('CLIENT');
+
+  app.use(cookieParser());
+  app.use(passport.initialize());
 
   app.useGlobalPipes(new ValidationPipe());
 
@@ -23,6 +29,9 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableCors({ origin, credentials: true });
+
+  const reflector = app.get(Reflector);
+  app.useGlobalGuards(new JwtGuard(reflector));
 
   await app.listen(port, () => {
     console.log('[WEB]', `Running server on port: ${port}`);

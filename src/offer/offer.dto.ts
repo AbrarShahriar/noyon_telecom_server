@@ -3,17 +3,23 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Min,
 } from 'class-validator';
 import { OfferCategory, OfferType, SIMCARD } from './offer.enums';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateOfferDTO {
   @IsNotEmpty()
   @IsString()
   @ApiProperty()
   title: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional()
+  desc?: string;
 
   @IsNotEmpty()
   @IsEnum(OfferCategory)

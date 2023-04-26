@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsPositive,
   IsString,
   Length,
@@ -14,15 +15,18 @@ export class CreateMembershipBuyReqDto {
   @IsNotEmpty()
   @IsString()
   @Length(11)
+  @ApiProperty()
   userPhone: string;
 
   @IsNotEmpty()
   @IsNumber()
   @IsPositive()
+  @ApiProperty()
   amount: number;
 
   @IsNotEmpty()
   @IsEnum(PaymentMethod)
+  @ApiProperty({ enum: PaymentMethod })
   @ApiProperty({ enum: PaymentMethod })
   paymentMethod: PaymentMethod;
 
@@ -34,20 +38,35 @@ export class CreateMembershipBuyReqDto {
 
   @IsNotEmpty()
   @IsString()
+  @ApiProperty()
   transactionId: string;
+}
+
+export class RejectReqDto {
+  @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty()
+  membershipBuyReqId: number;
 }
 
 export class UpdateMembershipBuyReqApprovedDto {
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty()
   approved: boolean;
 
   @IsNotEmpty()
-  @IsString()
-  moderatorId: number;
+  @IsNumber()
+  @ApiProperty()
+  membershipBuyReqId: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  @Length(11)
-  userPhone: string;
+  @ApiProperty()
+  moderatorId?: number;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  approvedBy?: string;
 }

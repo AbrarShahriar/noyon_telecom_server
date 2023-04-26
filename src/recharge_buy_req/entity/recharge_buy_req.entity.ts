@@ -25,6 +25,9 @@ export class RechargeBuyReq {
   @Column({ default: false })
   approved: boolean;
 
+  @Column({ nullable: true })
+  approvedBy: string;
+
   @ManyToOne(() => Moderator, (moderator) => moderator.approvedRechargeReqs)
   moderator: Moderator;
 

@@ -1,4 +1,9 @@
 export enum Subscription {
   PREMIUM = 'premium',
-  REGULAR = 'regular'
+  REGULAR = 'regular',
+}
+
+export enum Balance_Actions {
+  INCREMENT = 'incr',
+  DECREMENT = 'decr',
 }

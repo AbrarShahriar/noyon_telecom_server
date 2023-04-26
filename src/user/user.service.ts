@@ -9,16 +9,60 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto, GetUserDto } from './user.dto';
+import { CreateUserDto, GetUserDto, UpdateUserBalanceDto } from './user.dto';
 import {
   HttpResponse,
   createResponse,
 } from 'src/shared/error_handling/HttpResponse';
-import { Subscription } from './user.enums';
+import { Balance_Actions, Subscription } from './user.enums';
+import { Request } from 'express';
+import { UserHistoryService } from 'src/user_history/user_history.service';
+import { UserHistoryType } from 'src/user_history/user_history.enum';
 @Injectable()
 export class UserService {
   @InjectRepository(User)
   private readonly userRepo: Repository<User>;
+
+  constructor(private readonly userHistoryService: UserHistoryService) {}
+
+  async getUserFromReq(req: Request) {
+    const userInfo = await this.userRepo.findOne({
+      where: { id: (req.user as User).id },
+      select: {
+        name: true,
+        subscription: true,
+        createdAt: true,
+        balance: true,
+        phone: true,
+      },
+    });
+
+    const stat = await this.userHistoryService.getTotalHistory(
+      (req.user as User).phone,
+    );
+
+    let totalSaved = 0;
+    let totalBought = 0;
+    let totalSpent = 0;
+
+    stat.forEach((history) => {
+      if (
+        history.historyType == UserHistoryType.Bundle ||
+        history.historyType == UserHistoryType.Internet ||
+        history.historyType == UserHistoryType.Minute ||
+        history.historyType == UserHistoryType.Recharge
+      ) {
+        totalBought++;
+        totalSpent += history.amount;
+      }
+
+      totalSaved += history.saved;
+    });
+
+    const data: any = { ...userInfo, totalBought, totalSaved, totalSpent };
+
+    return data;
+  }
 
   async getUserByPhone(phone: string): Promise<GetUserDto | null> {
     const user = await this.userRepo.findOne({
@@ -38,6 +82,7 @@ export class UserService {
         id: true,
         name: true,
         balance: true,
+        phone: true,
         createdAt: true,
       },
     });
@@ -68,23 +113,39 @@ export class UserService {
     }
   }
 
-  async updateUserBalance(
-    phone: string,
-    prevBalance: number,
-    topupAmount: number,
-  ) {
-    const user = await this.userRepo.findOne({ where: { phone } });
-
-    if (user.balance != prevBalance) {
-      throw new HttpException('Something Went Wrong', HttpStatus.BAD_REQUEST);
+  async updateUserBalance(body: UpdateUserBalanceDto) {
+    let user = null;
+    if (body.id) {
+      user = await this.userRepo.findOne({ where: { id: body.id } });
+    } else if (body.phone) {
+      user = await this.userRepo.findOne({ where: { phone: body.phone } });
+    } else {
+      return user;
     }
 
-    user.balance += topupAmount;
+    let newBalance = user.balance;
+
+    switch (body.balanceAction) {
+      case Balance_Actions.INCREMENT:
+        newBalance += body.amount;
+        break;
+      case Balance_Actions.DECREMENT:
+        if (user.balance - body.amount < 0) {
+          throw new HttpException('Insufficient Balance', HttpStatus.FORBIDDEN);
+        } else {
+          newBalance -= body.amount;
+        }
+        break;
+
+      default:
+        newBalance = user.balance;
+        break;
+    }
 
     try {
       return await this.userRepo.save({
         id: user.id,
-        balance: user.balance,
+        balance: newBalance,
       });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

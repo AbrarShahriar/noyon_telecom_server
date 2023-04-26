@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { User } from '../../user/entity/user.entity';
@@ -23,12 +28,15 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       return user;
     }
 
-    if (user == undefined) {
-      throw new UnauthorizedException('User not found');
+    if (!user) {
+      throw new HttpException(
+        'No Account Found Under This Phone Number',
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     if (!passwordMatch) {
-      throw new UnauthorizedException('Invalid Pin');
+      throw new UnauthorizedException('Wrong Pin');
     }
   }
 }

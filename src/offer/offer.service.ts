@@ -22,6 +22,7 @@ export class OfferService {
       select: {
         title: true,
         expiration: true,
+        category: true,
         discountPrice: true,
         regularPrice: true,
       },

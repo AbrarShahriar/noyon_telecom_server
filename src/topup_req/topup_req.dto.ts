@@ -9,6 +9,13 @@ import {
 } from 'class-validator';
 import { PaymentMethod } from 'src/shared/enums/enums';
 
+export class RejectReqDto {
+  @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty()
+  topupReqId: number;
+}
+
 export class CreateTopupReqDto {
   @IsNotEmpty()
   @IsNumber()
@@ -39,6 +46,16 @@ export class CreateTopupReqDto {
 }
 
 export class TopupReqApprovedDto {
+  @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty()
+  id: number;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  userPhone: string;
+
   @IsNotEmpty()
   @IsBoolean()
   @ApiProperty()

@@ -35,6 +35,9 @@ export class MembershipBuyReq {
   @Column({ default: false })
   approved: boolean;
 
+  @Column({ nullable: true })
+  approvedBy: string;
+
   @ManyToOne(() => Moderator, (moderator) => moderator.approvedMembershipReqs)
   moderator: Moderator;
 

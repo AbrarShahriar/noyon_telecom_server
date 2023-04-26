@@ -6,13 +6,17 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { MembershipBuyReqService } from './membership_buy_req.service';
 import {
   CreateMembershipBuyReqDto,
+  RejectReqDto,
   UpdateMembershipBuyReqApprovedDto,
 } from './membership_buy_req.dto';
+import { AdminGuard } from 'src/shared/guards/admin.guard';
+import { Public } from 'src/shared/security/PublicEndpoint';
 
 @ApiTags('membership buy req')
 @Controller('membership-buy-req')
@@ -20,9 +24,18 @@ export class MembershipBuyReqController {
   @Inject(MembershipBuyReqService)
   private readonly membershipBuyReqService: MembershipBuyReqService;
 
+  @Public()
+  @UseGuards(AdminGuard)
   @Get()
   getAllMembershipBuyReq() {
     return this.membershipBuyReqService.getAllMembershipBuyReq();
+  }
+
+  @Public()
+  @UseGuards(AdminGuard)
+  @Post('/reject')
+  rejectTopupReq(@Body() body: RejectReqDto) {
+    return this.membershipBuyReqService.rejectReq(body);
   }
 
   @Post()
@@ -30,14 +43,10 @@ export class MembershipBuyReqController {
     return this.membershipBuyReqService.insertMembershipBuyReq(body);
   }
 
-  @Patch('/:membershipBuyReqId')
-  updateOfferBuyStatus(
-    @Param('membershipBuyReqId') membershipBuyReqId: number,
-    @Body() body: UpdateMembershipBuyReqApprovedDto,
-  ) {
-    return this.membershipBuyReqService.updateMembershipBuyStatus(
-      membershipBuyReqId,
-      body,
-    );
+  @Public()
+  @UseGuards(AdminGuard)
+  @Patch('/')
+  updateOfferBuyStatus(@Body() body: UpdateMembershipBuyReqApprovedDto) {
+    return this.membershipBuyReqService.updateMembershipBuyStatus(body);
   }
 }

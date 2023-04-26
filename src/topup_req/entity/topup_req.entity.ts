@@ -36,6 +36,9 @@ export class TopupReq {
   @Column({ default: false })
   approved: boolean;
 
+  @Column({ nullable: true, default: null })
+  approvedBy: string;
+
   @ManyToOne(() => Moderator, (moderator) => moderator.approvedTopupReqs)
   moderator: Moderator;
 

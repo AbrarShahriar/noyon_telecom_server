@@ -1,5 +1,6 @@
 import { Moderator } from 'src/moderator/entity/moderator.entity';
 import { Offer } from 'src/offer/entity/offer.entity';
+import { UserHistory } from 'src/user_history/entity/user_history.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,6 +8,8 @@ import {
   UpdateDateColumn,
   ManyToOne,
   CreateDateColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity('offer_buy_reqs')
@@ -22,6 +25,9 @@ export class OfferBuyReq {
 
   @Column({ default: false })
   approved: boolean;
+
+  @Column({ nullable: true })
+  approvedBy: string;
 
   @ManyToOne(() => Moderator, (moderator) => moderator.approvedOfferReqs)
   moderator: Moderator;

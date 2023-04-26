@@ -1,6 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  Length,
+} from 'class-validator';
+import { Balance_Actions } from './user.enums';
 
 export class CreateUserDto {
   @ApiProperty()
@@ -31,4 +40,27 @@ export class GetUserDto {
   constructor(partial: Partial<GetUserDto>) {
     Object.assign(this, partial);
   }
+}
+
+export class UpdateUserBalanceDto {
+  @ApiProperty()
+  @IsOptional()
+  @IsNumber()
+  id?: number;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
+  amount: number;
+
+  @ApiProperty({ type: 'enum', enum: Balance_Actions })
+  @IsNotEmpty()
+  @IsEnum(Balance_Actions)
+  balanceAction: Balance_Actions;
 }

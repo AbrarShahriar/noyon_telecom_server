@@ -17,6 +17,9 @@ export class Offer {
   @Column()
   title: string;
 
+  @Column({ nullable: true })
+  desc?: string;
+
   @Column({ type: 'enum', enum: OfferCategory, nullable: true })
   category: OfferCategory;
 
