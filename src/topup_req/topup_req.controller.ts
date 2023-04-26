@@ -11,7 +11,7 @@ import {
 import { TopupReqService } from './topup_req.service';
 import {
   CreateTopupReqDto,
-  RejectReqDto,
+  TopupRejectReqDto,
   TopupReqApprovedDto,
 } from './topup_req.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -27,7 +27,7 @@ export class TopupReqController {
   @Public()
   @UseGuards(AdminGuard)
   @Post('/reject')
-  rejectReq(@Body() body: RejectReqDto) {
+  rejectReq(@Body() body: TopupRejectReqDto) {
     return this.topupReqService.rejectReq(body);
   }
 

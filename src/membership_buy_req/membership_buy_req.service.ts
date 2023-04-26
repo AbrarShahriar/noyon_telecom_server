@@ -4,7 +4,7 @@ import { MembershipBuyReq } from './entity/membership_buy_req.entity';
 import { Between, Repository } from 'typeorm';
 import {
   CreateMembershipBuyReqDto,
-  RejectReqDto,
+  MembershipRejectReqDto,
   UpdateMembershipBuyReqApprovedDto,
 } from './membership_buy_req.dto';
 import { createResponse } from 'src/shared/error_handling/HttpResponse';
@@ -75,7 +75,7 @@ export class MembershipBuyReqService {
     });
   }
 
-  async rejectReq(body: RejectReqDto) {
+  async rejectReq(body: MembershipRejectReqDto) {
     const membershipReq = await this.membershipBuyReqRepo.findOne({
       where: { id: body.membershipBuyReqId },
       select: { id: true, amount: true, paymentMethod: true },

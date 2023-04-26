@@ -12,7 +12,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { RechargeBuyReqService } from './recharge_buy_req.service';
 import {
   CreateRechargeBuyReqDto,
-  RejectReqDto,
+  RechargeRejectReqDto,
   UpdateRechargeBuyReqApprovedDto,
 } from './recharge_buy_req.dto';
 import { AdminGuard } from 'src/shared/guards/admin.guard';
@@ -32,7 +32,7 @@ export class RechargeBuyReqController {
   @Public()
   @UseGuards(AdminGuard)
   @Post('/reject')
-  rejectReq(@Body() body: RejectReqDto) {
+  rejectReq(@Body() body: RechargeRejectReqDto) {
     return this.rechargeBuyReqService.rejectReq(body);
   }
 

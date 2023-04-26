@@ -58,6 +58,8 @@ export class OfferController {
     return this.offerService.getOffersBasedOnFilter(simcard, category, expiry);
   }
 
+  @Public()
+  @UseGuards(AdminGuard)
   @Post()
   createOffer(@Body() body: CreateOfferDTO) {
     return this.offerService.createOffer(body);

@@ -4,7 +4,7 @@ import { OfferBuyReq } from './entity/offer_buy_req.entity';
 import { Between, Repository } from 'typeorm';
 import {
   CreateOfferBuyReqDto,
-  RejectReqDto,
+  OfferRejectReqDto,
   UpdateOfferBuyReqApprovedDto,
 } from './offer_buy_req.dto';
 import { createResponse } from 'src/shared/error_handling/HttpResponse';
@@ -131,7 +131,7 @@ export class OfferBuyReqService {
     return formattedReqs;
   }
 
-  async rejectReq(body: RejectReqDto) {
+  async rejectReq(body: OfferRejectReqDto) {
     const offerBuyReq = await this.offerBuyReqRepo.findOne({
       where: { id: body.offerBuyReqId },
       select: { id: true, offer: { discountPrice: true }, phone: true },

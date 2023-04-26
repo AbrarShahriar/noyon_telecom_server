@@ -42,7 +42,7 @@ export class CreateMembershipBuyReqDto {
   transactionId: string;
 }
 
-export class RejectReqDto {
+export class MembershipRejectReqDto {
   @IsNotEmpty()
   @IsNumber()
   @ApiProperty()

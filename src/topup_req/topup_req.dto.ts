@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { PaymentMethod } from 'src/shared/enums/enums';
 
-export class RejectReqDto {
+export class TopupRejectReqDto {
   @IsNotEmpty()
   @IsNumber()
   @ApiProperty()

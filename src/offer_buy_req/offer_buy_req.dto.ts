@@ -21,7 +21,7 @@ export class CreateOfferBuyReqDto {
   offerId: number;
 }
 
-export class RejectReqDto {
+export class OfferRejectReqDto {
   @IsNotEmpty()
   @IsNumber()
   @ApiProperty()

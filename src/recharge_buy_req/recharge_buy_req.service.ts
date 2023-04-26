@@ -4,7 +4,7 @@ import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   CreateRechargeBuyReqDto,
-  RejectReqDto,
+  RechargeRejectReqDto,
   UpdateRechargeBuyReqApprovedDto,
 } from './recharge_buy_req.dto';
 import { createResponse } from 'src/shared/error_handling/HttpResponse';
@@ -23,7 +23,7 @@ export class RechargeBuyReqService {
     private readonly userService: UserService,
   ) {}
 
-  async rejectReq(body: RejectReqDto) {
+  async rejectReq(body: RechargeRejectReqDto) {
     const rechargeBuyReq = await this.rechargeBuyReqRepo.findOne({
       where: { id: body.rechargeBuyReqId },
     });
@@ -127,6 +127,7 @@ export class RechargeBuyReqService {
         phone: true,
         amount: true,
       },
+      order: { createdAt: 'DESC' },
     });
   }
 

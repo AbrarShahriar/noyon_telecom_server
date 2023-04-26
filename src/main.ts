@@ -6,6 +6,8 @@ import 'reflect-metadata';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import * as passport from 'passport';
+import * as compression from 'compression';
+import helmet from 'helmet';
 import { JwtGuard } from './auth/guards/jwt.guard';
 
 async function bootstrap() {
@@ -17,6 +19,8 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.use(passport.initialize());
+  app.use(compression());
+  app.use(helmet());
 
   app.useGlobalPipes(new ValidationPipe());
 
@@ -28,7 +32,11 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
 
-  app.enableCors({ origin, credentials: true });
+  app.enableCors({
+    origin,
+    credentials: true,
+    methods: ['POST', 'GET', 'OPTIONS', 'PATCH', 'DELETE'],
+  });
 
   const reflector = app.get(Reflector);
   app.useGlobalGuards(new JwtGuard(reflector));

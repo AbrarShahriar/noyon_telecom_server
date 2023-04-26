@@ -4,7 +4,7 @@ import { TopupReq } from './entity/topup_req.entity';
 import { Between, Repository } from 'typeorm';
 import {
   CreateTopupReqDto,
-  RejectReqDto,
+  TopupRejectReqDto,
   TopupReqApprovedDto,
 } from './topup_req.dto';
 import { createResponse } from 'src/shared/error_handling/HttpResponse';
@@ -67,7 +67,7 @@ export class TopupReqService {
     });
   }
 
-  async rejectReq(body: RejectReqDto) {
+  async rejectReq(body: TopupRejectReqDto) {
     const topupReq = await this.topupReqRepo.findOne({
       where: { id: body.topupReqId },
     });

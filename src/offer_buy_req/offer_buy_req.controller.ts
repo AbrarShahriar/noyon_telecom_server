@@ -11,7 +11,7 @@ import {
 import { OfferBuyReqService } from './offer_buy_req.service';
 import {
   CreateOfferBuyReqDto,
-  RejectReqDto,
+  OfferRejectReqDto,
   UpdateOfferBuyReqApprovedDto,
 } from './offer_buy_req.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -32,7 +32,7 @@ export class OfferBuyReqController {
   @Public()
   @UseGuards(AdminGuard)
   @Post('/reject')
-  rejectReq(@Body() body: RejectReqDto) {
+  rejectReq(@Body() body: OfferRejectReqDto) {
     return this.offerBuyReqService.rejectReq(body);
   }
 

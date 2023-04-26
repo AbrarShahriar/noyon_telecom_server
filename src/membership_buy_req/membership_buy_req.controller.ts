@@ -12,7 +12,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { MembershipBuyReqService } from './membership_buy_req.service';
 import {
   CreateMembershipBuyReqDto,
-  RejectReqDto,
+  MembershipRejectReqDto,
   UpdateMembershipBuyReqApprovedDto,
 } from './membership_buy_req.dto';
 import { AdminGuard } from 'src/shared/guards/admin.guard';
@@ -34,7 +34,7 @@ export class MembershipBuyReqController {
   @Public()
   @UseGuards(AdminGuard)
   @Post('/reject')
-  rejectTopupReq(@Body() body: RejectReqDto) {
+  rejectTopupReq(@Body() body: MembershipRejectReqDto) {
     return this.membershipBuyReqService.rejectReq(body);
   }
 

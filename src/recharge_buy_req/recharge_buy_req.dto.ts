@@ -45,7 +45,7 @@ export class UpdateRechargeBuyReqApprovedDto {
   approvedBy?: string;
 }
 
-export class RejectReqDto {
+export class RechargeRejectReqDto {
   @IsNotEmpty()
   @IsNumber()
   @ApiProperty()
