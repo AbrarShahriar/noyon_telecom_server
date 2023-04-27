@@ -35,7 +35,10 @@ export class AuthController {
     };
 
     let token = this.jwtService.sign(payload);
-    res.cookie('access_token', token, { maxAge: 1000 * 60 * 60 * 24 });
+    res.cookie('access_token', token, {
+      maxAge: 1000 * 60 * 60 * 24,
+      sameSite: 'none',
+    });
 
     return createResponse({
       message: 'User Logged In',
