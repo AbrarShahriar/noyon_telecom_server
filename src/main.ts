@@ -33,7 +33,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableCors({
-    origin,
+    origin: ['https://noyon-telecom.netlify.app', 'http://localhost:5173'],
     credentials: true,
     methods: ['POST', 'GET', 'OPTIONS', 'PATCH', 'DELETE'],
   });
