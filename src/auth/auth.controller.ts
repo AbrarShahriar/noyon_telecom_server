@@ -38,6 +38,7 @@ export class AuthController {
     res.cookie('access_token', token, {
       maxAge: 1000 * 60 * 60 * 24,
       sameSite: 'none',
+      httpOnly: true,
     });
 
     return createResponse({
