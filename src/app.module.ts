@@ -16,6 +16,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserHistoryModule } from './user_history/user_history.module';
 import { AdminSettingsModule } from './admin_settings/admin_settings.module';
 import { AdminModule } from './admin/admin.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AdminModule } from './admin/admin.module';
     UserHistoryModule,
     AdminSettingsModule,
     AdminModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

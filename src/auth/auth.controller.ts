@@ -67,11 +67,6 @@ export class AuthController {
   @Get('/logout')
   logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     res.clearCookie('access_token');
-    // req.logout(null, (err) => {
-    //   if (err) {
-    //     console.log(err);
-    //   }
-    // });
     return {
       message: 'Logged Out',
     };

@@ -4,6 +4,7 @@ import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AdminSetting } from 'src/admin_settings/entity/admin_settings.entity';
 import { MembershipBuyReq } from 'src/membership_buy_req/entity/membership_buy_req.entity';
 import { Moderator } from 'src/moderator/entity/moderator.entity';
+import { Notification } from 'src/notification/entity/notification.entity';
 import { Offer } from 'src/offer/entity/offer.entity';
 import { OfferBuyReq } from 'src/offer_buy_req/entity/offer_buy_req.entity';
 import { Recharge } from 'src/recharge/entity/recharge.entity';
@@ -34,6 +35,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         Moderator,
         UserHistory,
         AdminSetting,
+        Notification,
       ],
       ssl: true,
       migrations: ['dist/migrations/*.{ts,js}'],

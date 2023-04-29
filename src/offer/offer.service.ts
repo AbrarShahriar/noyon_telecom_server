@@ -62,6 +62,7 @@ export class OfferService {
 
     return await this.OfferRepo.find({
       where: {
+        isPremium: false,
         ...query,
       },
     });

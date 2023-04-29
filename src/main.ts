@@ -34,6 +34,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: ['https://noyon-telecom.netlify.app', 'http://localhost:5173'],
+    // origin: true,
     credentials: true,
     methods: ['POST', 'GET', 'OPTIONS', 'PATCH', 'DELETE'],
   });
