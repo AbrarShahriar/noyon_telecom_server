@@ -11,7 +11,7 @@ import { UserHistoryModule } from 'src/user_history/user_history.module';
   imports: [
     TypeOrmModule.forFeature([MembershipBuyReq]),
     UserModule,
-    UserHistoryModule,
+    // UserHistoryModule,
   ],
   controllers: [MembershipBuyReqController],
   providers: [MembershipBuyReqService],

@@ -3,3 +3,9 @@ export enum PaymentMethod {
   NAGAD = 'nagad',
   ACCOUNT_BALANCE = 'balance',
 }
+
+export enum ReqStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}

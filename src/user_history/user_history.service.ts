@@ -3,11 +3,26 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserHistory } from './entity/user_history.entity';
 import { Between, Repository } from 'typeorm';
 import { CreateUserHistoryDto } from './user_history.dto';
+import { ReqStatus } from 'src/shared/enums/enums';
+import { createResponse } from 'src/shared/error_handling/HttpResponse';
+import { TopupReqService } from 'src/topup_req/topup_req.service';
+import { MembershipBuyReqService } from 'src/membership_buy_req/membership_buy_req.service';
+import { RechargeBuyReqService } from 'src/recharge_buy_req/recharge_buy_req.service';
+import { OfferBuyReqService } from 'src/offer_buy_req/offer_buy_req.service';
+import { IUserHistory } from './user_history';
+import { UserHistoryType } from './user_history.enum';
 
 @Injectable()
 export class UserHistoryService {
   @InjectRepository(UserHistory)
   private readonly userHistoryRepo: Repository<UserHistory>;
+
+  constructor(
+    private readonly membershipBuyReqService: MembershipBuyReqService,
+    private readonly offerBuyReqService: OfferBuyReqService,
+    private readonly rechargeReqService: RechargeBuyReqService,
+    private readonly topupReqService: TopupReqService,
+  ) {}
 
   async deleteHistory(reqId) {
     await this.userHistoryRepo.delete({ reqId });
@@ -20,23 +35,115 @@ export class UserHistoryService {
       year: parseInt(date.split('.')[1]),
     };
 
-    return await this.userHistoryRepo.find({
-      where: {
-        phone,
-        historyDate: Between(
-          new Date(formattedDate.year, formattedDate.month, formattedDate.day),
-          new Date(formattedDate.year, formattedDate.month + 1, 1),
-        ),
-      },
-      order: { historyDate: 'DESC' },
-    });
+    const topupHistory = await this.topupReqService.getUserHistory(
+      phone,
+      formattedDate,
+    );
+    const membershipHisory = await this.membershipBuyReqService.getUserHistory(
+      phone,
+      formattedDate,
+    );
+    const offerBuyHistory = await this.offerBuyReqService.getUserHistory(
+      phone,
+      formattedDate,
+    );
+    const rechargeBuyHistory = await this.rechargeReqService.getUserHistory(
+      phone,
+      formattedDate,
+    );
+
+    let formattedData: IUserHistory[] = [];
+
+    topupHistory.forEach((el) =>
+      formattedData.push({
+        historyType: UserHistoryType.Topup,
+        amount: el.amount,
+        saved: 0,
+        historyStatus: el.reqStatus,
+        transactionId: el.transactionId,
+        historyDate: el.createdAt,
+      }),
+    );
+    membershipHisory.forEach((el) =>
+      formattedData.push({
+        historyType: UserHistoryType.Membership,
+        amount: el.amount,
+        saved: 0,
+        historyStatus: el.reqStatus,
+        historyDate: el.createdAt,
+      }),
+    );
+    offerBuyHistory.forEach((el) =>
+      formattedData.push({
+        historyType: el.offer.category as any,
+        amount: el.offer.discountPrice,
+        saved: el.offer.regularPrice - el.offer.discountPrice,
+        historyStatus: el.reqStatus,
+        historyDate: el.createdAt,
+      }),
+    );
+    rechargeBuyHistory.forEach((el) =>
+      formattedData.push({
+        historyType: UserHistoryType.Recharge,
+        amount: el.amount,
+        saved: 0,
+        historyStatus: el.reqStatus,
+        historyDate: el.createdAt,
+      }),
+    );
+    return formattedData;
   }
 
   async getTotalHistory(phone: string) {
-    return await this.userHistoryRepo.find({
-      where: { phone },
-      order: { historyDate: 'DESC' },
-    });
+    const topupHistory = await this.topupReqService.getUserHistory(phone);
+    const membershipHisory = await this.membershipBuyReqService.getUserHistory(
+      phone,
+    );
+    const offerBuyHistory = await this.offerBuyReqService.getUserHistory(phone);
+    const rechargeBuyHistory = await this.rechargeReqService.getUserHistory(
+      phone,
+    );
+
+    let formattedData: IUserHistory[] = [];
+
+    topupHistory.forEach((el) =>
+      formattedData.push({
+        historyType: UserHistoryType.Topup,
+        amount: el.amount,
+        saved: 0,
+        historyStatus: el.reqStatus,
+        transactionId: el.transactionId,
+        historyDate: el.createdAt,
+      }),
+    );
+    membershipHisory.forEach((el) =>
+      formattedData.push({
+        historyType: UserHistoryType.Membership,
+        amount: el.amount,
+        saved: 0,
+        historyStatus: el.reqStatus,
+        historyDate: el.createdAt,
+      }),
+    );
+    offerBuyHistory.forEach((el) =>
+      formattedData.push({
+        historyType: el.offer.category as any,
+        amount: el.offer.discountPrice,
+        saved: el.offer.regularPrice - el.offer.discountPrice,
+        historyStatus: el.reqStatus,
+        historyDate: el.createdAt,
+      }),
+    );
+    rechargeBuyHistory.forEach((el) =>
+      formattedData.push({
+        historyType: UserHistoryType.Recharge,
+        amount: el.amount,
+        saved: 0,
+        historyStatus: el.reqStatus,
+        historyDate: el.createdAt,
+      }),
+    );
+    return formattedData;
   }
 
   async insertUserHistory(body: CreateUserHistoryDto) {
@@ -57,5 +164,18 @@ export class UserHistoryService {
     }
 
     return await this.userHistoryRepo.save(newHistory);
+  }
+
+  async updateHistoryReqStatus(reqId: number, reqStatus: ReqStatus) {
+    try {
+      await this.userHistoryRepo.update({ reqId: reqId }, { reqStatus });
+      return createResponse({
+        message: 'Updated',
+        payload: undefined,
+        error: '',
+      });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 }

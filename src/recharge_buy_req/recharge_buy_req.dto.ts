@@ -25,10 +25,22 @@ export class CreateRechargeBuyReqDto {
 
 export class UpdateRechargeBuyReqApprovedDto {
   @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty()
+  rechargeBuyReqId: number;
+
+  @IsOptional()
+  @IsNumber()
+  @ApiProperty()
+  moderatorId?: number;
+
+  @IsOptional()
   @IsBoolean()
   @ApiProperty()
-  approved: boolean;
+  actionByAdmin?: boolean;
+}
 
+export class RechargeRejectReqDto {
   @IsNotEmpty()
   @IsNumber()
   @ApiProperty()
@@ -40,14 +52,7 @@ export class UpdateRechargeBuyReqApprovedDto {
   moderatorId?: number;
 
   @IsOptional()
-  @IsString()
+  @IsBoolean()
   @ApiProperty()
-  approvedBy?: string;
-}
-
-export class RechargeRejectReqDto {
-  @IsNotEmpty()
-  @IsNumber()
-  @ApiProperty()
-  rechargeBuyReqId: number;
+  actionByAdmin?: boolean;
 }

@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserHistoryType } from '../user_history.enum';
+import { ReqStatus } from 'src/shared/enums/enums';
 
 @Entity('user_history')
 export class UserHistory {
@@ -32,6 +33,9 @@ export class UserHistory {
 
   @Column({ nullable: true })
   reqId: number;
+
+  @Column({ enum: ReqStatus, type: 'enum', default: ReqStatus.PENDING })
+  reqStatus: ReqStatus;
 
   @CreateDateColumn({ type: 'timestamp' })
   historyDate!: Date;

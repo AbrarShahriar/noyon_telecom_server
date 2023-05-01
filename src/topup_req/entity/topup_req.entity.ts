@@ -1,6 +1,6 @@
 import { Moderator } from 'src/moderator/entity/moderator.entity';
 import { Offer } from 'src/offer/entity/offer.entity';
-import { PaymentMethod } from 'src/shared/enums/enums';
+import { PaymentMethod, ReqStatus } from 'src/shared/enums/enums';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -30,18 +30,12 @@ export class TopupReq {
   @Column({ nullable: true })
   transactionId: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
-  @Column({ default: false })
-  approved: boolean;
+  @Column({ type: 'enum', enum: ReqStatus, default: ReqStatus.PENDING })
+  reqStatus: ReqStatus;
 
-  @Column({ nullable: true, default: null })
-  approvedBy: string;
-
-  @ManyToOne(() => Moderator, (moderator) => moderator.approvedTopupReqs)
-  moderator: Moderator;
-
-  @UpdateDateColumn({ type: 'timestamp' })
-  approvedAt!: Date;
+  @UpdateDateColumn({ type: 'timestamptz' })
+  actionAt!: Date;
 }

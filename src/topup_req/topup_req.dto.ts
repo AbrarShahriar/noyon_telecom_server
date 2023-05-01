@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Length,
 } from 'class-validator';
@@ -55,14 +56,4 @@ export class TopupReqApprovedDto {
   @IsString()
   @ApiProperty()
   userPhone: string;
-
-  @IsNotEmpty()
-  @IsBoolean()
-  @ApiProperty()
-  approved: boolean;
-
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty()
-  approvedBy: string;
 }

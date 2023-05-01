@@ -54,6 +54,12 @@ export class CreateOfferDTO {
   discountPrice: number;
 
   @IsNotEmpty()
+  @Min(0)
+  @IsNumber()
+  @ApiProperty()
+  adminPrice: number;
+
+  @IsNotEmpty()
   @IsString()
   @ApiProperty()
   expiration: string;

@@ -12,6 +12,7 @@ import { UserHistoryService } from 'src/user_history/user_history.service';
 import { UserHistoryType } from 'src/user_history/user_history.enum';
 import { UserService } from 'src/user/user.service';
 import { Balance_Actions } from 'src/user/user.enums';
+import { ReqStatus } from 'src/shared/enums/enums';
 
 @Injectable()
 export class RechargeBuyReqService {
@@ -19,131 +20,21 @@ export class RechargeBuyReqService {
   private readonly rechargeBuyReqRepo: Repository<RechargeBuyReq>;
 
   constructor(
-    private readonly userHistoryService: UserHistoryService,
+    // private readonly userHistoryService: UserHistoryService,
     private readonly userService: UserService,
   ) {}
 
-  async rejectReq(body: RechargeRejectReqDto) {
-    const rechargeBuyReq = await this.rechargeBuyReqRepo.findOne({
-      where: { id: body.rechargeBuyReqId },
-    });
-
-    try {
-      await this.userService.updateUserBalance({
-        phone: rechargeBuyReq.phone,
-        amount: rechargeBuyReq.amount,
-        balanceAction: Balance_Actions.INCREMENT,
-      });
-
-      await this.userHistoryService.deleteHistory(rechargeBuyReq.id);
-      await this.rechargeBuyReqRepo.delete(body.rechargeBuyReqId);
-
-      return createResponse({
-        message: 'Rejected',
-        payload: undefined,
-        error: '',
-      });
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  async getApprovedRechargeBuyReqsOfModerator(moderatorId, date?) {
-    if (date) {
-      return await this.rechargeBuyReqRepo.find({
-        where: {
-          approved: true,
-          moderator: { id: moderatorId },
-          approvedAt: Between(
-            new Date(date.year, date.month, date.day),
-            new Date(date.year, date.month, date.day + 1),
-          ),
-        },
-        select: {
-          approvedAt: true,
-          phone: true,
-          approvedBy: true,
-          moderator: { username: true },
-          amount: true,
-        },
-        relations: { moderator: true },
-      });
-    }
-    return await this.rechargeBuyReqRepo.find({
-      where: {
-        approved: true,
-        moderator: { id: moderatorId },
-      },
-      select: {
-        approvedAt: true,
-        phone: true,
-        approvedBy: true,
-        moderator: { username: true },
-        amount: true,
-      },
-      relations: { moderator: true },
-    });
-  }
-  async getApprovedRechargeBuyReqs(date?) {
-    if (date) {
-      return await this.rechargeBuyReqRepo.find({
-        where: {
-          approved: true,
-          approvedAt: Between(
-            new Date(date.year, date.month, date.day),
-            new Date(date.year, date.month, date.day + 1),
-          ),
-        },
-        select: {
-          approvedAt: true,
-          phone: true,
-          approvedBy: true,
-          moderator: { username: true },
-          amount: true,
-        },
-        relations: { moderator: true },
-      });
-    }
-    return await this.rechargeBuyReqRepo.find({
-      where: {
-        approved: true,
-      },
-      select: {
-        approvedAt: true,
-        phone: true,
-        approvedBy: true,
-        moderator: { username: true },
-        amount: true,
-      },
-      relations: { moderator: true },
-    });
-  }
-
-  async getAllRechargeBuyReqs() {
-    return await this.rechargeBuyReqRepo.find({
-      where: { approved: false },
-      select: {
-        id: true,
-        phone: true,
-        amount: true,
-      },
-      order: { createdAt: 'DESC' },
-    });
-  }
-
   async insertRechargeBuyReq(body: CreateRechargeBuyReqDto) {
-    const rechargeBuyReq = this.rechargeBuyReqRepo.create();
-    rechargeBuyReq.phone = body.phone;
-    rechargeBuyReq.amount = body.amount;
+    const rechargeBuyReq = this.rechargeBuyReqRepo.create(body);
 
     try {
       let newReq = await this.rechargeBuyReqRepo.save(rechargeBuyReq);
-      await this.userHistoryService.insertUserHistory({
-        amount: body.amount,
-        historyType: UserHistoryType.Recharge,
-        phone: body.phone,
-        reqId: newReq.id,
-      });
+      // await this.userHistoryService.insertUserHistory({
+      //   amount: body.amount,
+      //   historyType: UserHistoryType.Recharge,
+      //   phone: body.phone,
+      //   reqId: newReq.id,
+      // });
       await this.userService.updateUserBalance({
         phone: body.phone,
         amount: body.amount,
@@ -164,13 +55,13 @@ export class RechargeBuyReqService {
     try {
       if (body.moderatorId) {
         await this.rechargeBuyReqRepo.update(body.rechargeBuyReqId, {
-          approved: body.approved,
-          moderator: { id: body.approvedBy as any },
+          reqStatus: ReqStatus.APPROVED,
+          moderator: { id: body.moderatorId as any },
         });
-      } else if (body.approvedBy) {
+      } else if (body.actionByAdmin) {
         await this.rechargeBuyReqRepo.update(body.rechargeBuyReqId, {
-          approved: body.approved,
-          approvedBy: 'admin',
+          reqStatus: ReqStatus.APPROVED,
+          actionBy: 'admin',
         });
       } else {
         return null;
@@ -185,9 +76,189 @@ export class RechargeBuyReqService {
     }
   }
 
+  async rejectReq(body: RechargeRejectReqDto) {
+    const rechargeBuyReq = await this.rechargeBuyReqRepo.findOne({
+      where: { id: body.rechargeBuyReqId },
+    });
+
+    try {
+      if (body.moderatorId) {
+        await this.rechargeBuyReqRepo.update(body.rechargeBuyReqId, {
+          reqStatus: ReqStatus.REJECTED,
+          moderator: { id: body.moderatorId as any },
+        });
+      } else if (body.actionByAdmin) {
+        await this.rechargeBuyReqRepo.update(body.rechargeBuyReqId, {
+          reqStatus: ReqStatus.REJECTED,
+          actionBy: 'admin',
+        });
+      } else {
+        return null;
+      }
+      await this.userService.updateUserBalance({
+        phone: rechargeBuyReq.phone,
+        amount: rechargeBuyReq.amount,
+        balanceAction: Balance_Actions.INCREMENT,
+      });
+      return createResponse({
+        message: 'Rejected',
+        payload: undefined,
+        error: '',
+      });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getApprovedRechargeBuyReqsOfModerator(moderatorId: number) {
+    return await this.rechargeBuyReqRepo.find({
+      select: { amount: true },
+      where: { reqStatus: ReqStatus.APPROVED, moderator: { id: moderatorId } },
+    });
+  }
+
+  async getApprovedAndRejectedRechargeBuyReqsOfModerator(moderatorId, date?) {
+    if (date) {
+      return await this.rechargeBuyReqRepo.find({
+        where: [
+          {
+            moderator: { id: moderatorId },
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.APPROVED,
+          },
+          {
+            moderator: { id: moderatorId },
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.REJECTED,
+          },
+        ],
+        select: {
+          actionAt: true,
+          phone: true,
+          reqStatus: true,
+          moderator: { username: true },
+          amount: true,
+        },
+        relations: { moderator: true },
+      });
+    }
+    return await this.rechargeBuyReqRepo.find({
+      where: [
+        {
+          moderator: { id: moderatorId },
+          reqStatus: ReqStatus.APPROVED,
+        },
+        {
+          moderator: { id: moderatorId },
+          reqStatus: ReqStatus.REJECTED,
+        },
+      ],
+      select: {
+        actionAt: true,
+        phone: true,
+        moderator: { username: true },
+        amount: true,
+      },
+      relations: { moderator: true },
+    });
+  }
+
+  async getApprovedRechargepBuyReq() {
+    return await this.rechargeBuyReqRepo.find({
+      where: { reqStatus: ReqStatus.APPROVED },
+      select: { amount: true },
+    });
+  }
+
+  async getApprovedAndRejectedRechargeBuyReqs(date?) {
+    if (date) {
+      return await this.rechargeBuyReqRepo.find({
+        where: [
+          {
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.APPROVED,
+          },
+          {
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.REJECTED,
+          },
+        ],
+        select: {
+          actionAt: true,
+          phone: true,
+          actionBy: true,
+          reqStatus: true,
+          moderator: { username: true },
+          amount: true,
+        },
+        relations: { moderator: true },
+      });
+    }
+    return await this.rechargeBuyReqRepo.find({
+      where: [
+        {
+          reqStatus: ReqStatus.APPROVED,
+        },
+        {
+          reqStatus: ReqStatus.REJECTED,
+        },
+      ],
+      select: {
+        actionAt: true,
+        phone: true,
+        actionBy: true,
+        reqStatus: true,
+        moderator: { username: true },
+        amount: true,
+      },
+      relations: { moderator: true },
+    });
+  }
+
+  async getAllRechargeBuyReqs() {
+    return await this.rechargeBuyReqRepo.find({
+      where: { reqStatus: ReqStatus.PENDING },
+      select: {
+        id: true,
+        phone: true,
+        amount: true,
+      },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async getRechargeReqCount() {
     return await this.rechargeBuyReqRepo.count({
-      where: { approved: false },
+      where: { reqStatus: ReqStatus.PENDING },
+    });
+  }
+
+  async getUserHistory(phone: string, date?) {
+    if (date) {
+      return await this.rechargeBuyReqRepo.find({
+        where: {
+          phone,
+          actionAt: Between(
+            new Date(date.year, date.month, date.day),
+            new Date(date.year, date.month, date.day + 1),
+          ),
+        },
+      });
+    }
+    return await this.rechargeBuyReqRepo.find({
+      where: { phone },
     });
   }
 }

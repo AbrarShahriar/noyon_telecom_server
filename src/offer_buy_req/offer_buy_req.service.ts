@@ -13,6 +13,7 @@ import { OfferService } from 'src/offer/offer.service';
 import { UserHistoryType } from '../user_history/user_history.enum';
 import { UserService } from 'src/user/user.service';
 import { Balance_Actions } from 'src/user/user.enums';
+import { ReqStatus } from 'src/shared/enums/enums';
 
 @Injectable()
 export class OfferBuyReqService {
@@ -21,27 +22,42 @@ export class OfferBuyReqService {
 
   constructor(
     private readonly offerService: OfferService,
-    private readonly userHistoryService: UserHistoryService,
+    // private readonly userHistoryService: UserHistoryService,
     private readonly userService: UserService,
   ) {}
 
-  async getApprovedOfferBuyReqs(date?) {
+  async getApprovedOfferBuyReq() {
+    return await this.offerBuyReqRepo.find({
+      relations: { offer: true },
+      where: { reqStatus: ReqStatus.APPROVED },
+      select: { offer: { adminPrice: true, discountPrice: true } },
+    });
+  }
+
+  async getApprovedAndRejectedOfferBuyReqs(date?) {
     if (date) {
       return await this.offerBuyReqRepo.find({
-        where: {
-          approved: true,
-          approvedAt: Between(
-            new Date(date.year, date.month, date.day),
-            new Date(date.year, date.month, date.day + 1),
-          ),
-        },
+        where: [
+          {
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.APPROVED,
+          },
+          {
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.REJECTED,
+          },
+        ],
         select: {
-          id: false,
-          phone: false,
-          createdAt: false,
-          approved: false,
-          approvedAt: false,
-          approvedBy: false,
+          phone: true,
+          actionBy: true,
+          reqStatus: true,
+          actionAt: true,
           offer: { discountPrice: true, category: true },
           moderator: { username: true },
         },
@@ -49,14 +65,15 @@ export class OfferBuyReqService {
       });
     }
     return await this.offerBuyReqRepo.find({
-      where: { approved: true },
+      where: [
+        { reqStatus: ReqStatus.APPROVED },
+        { reqStatus: ReqStatus.REJECTED },
+      ],
       select: {
-        id: false,
-        phone: false,
-        createdAt: false,
-        approved: false,
-        approvedAt: false,
-        approvedBy: false,
+        phone: true,
+        actionBy: true,
+        reqStatus: true,
+        actionAt: true,
         offer: { discountPrice: true, category: true },
         moderator: { username: true },
       },
@@ -64,24 +81,45 @@ export class OfferBuyReqService {
     });
   }
 
-  async getApprovedOfferBuyReqsOfModerator(moderatorId: number, date?) {
+  async getApprovedOfferBuyReqsOfModerator(moderatorId: number) {
+    return await this.offerBuyReqRepo.find({
+      relations: { offer: true },
+      select: { offer: { adminPrice: true, discountPrice: true } },
+      where: { reqStatus: ReqStatus.APPROVED, moderator: { id: moderatorId } },
+    });
+  }
+
+  async getApprovedAndRejectedOfferBuyReqsOfModerator(
+    moderatorId: number,
+    date?,
+  ) {
     if (date) {
       return await this.offerBuyReqRepo.find({
-        where: {
-          approved: true,
-          moderator: { id: moderatorId },
-          approvedAt: Between(
-            new Date(date.year, date.month, date.day),
-            new Date(date.year, date.month, date.day + 1),
-          ),
-        },
+        where: [
+          {
+            moderator: { id: moderatorId },
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.APPROVED,
+          },
+          {
+            moderator: { id: moderatorId },
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.REJECTED,
+          },
+        ],
         select: {
           id: false,
           phone: false,
           createdAt: false,
-          approved: false,
-          approvedAt: false,
-          approvedBy: false,
+          actionAt: false,
+          actionBy: false,
+          reqStatus: true,
           offer: { discountPrice: true, category: true },
           moderator: { username: true },
         },
@@ -89,14 +127,17 @@ export class OfferBuyReqService {
       });
     }
     return await this.offerBuyReqRepo.find({
-      where: { approved: true, moderator: { id: moderatorId } },
+      where: [
+        { reqStatus: ReqStatus.APPROVED, moderator: { id: moderatorId } },
+        { reqStatus: ReqStatus.REJECTED, moderator: { id: moderatorId } },
+      ],
       select: {
         id: false,
         phone: false,
         createdAt: false,
-        approved: false,
-        approvedAt: false,
-        approvedBy: false,
+        actionAt: false,
+        actionBy: false,
+        reqStatus: true,
         offer: { discountPrice: true, category: true },
         moderator: { username: true },
       },
@@ -106,13 +147,19 @@ export class OfferBuyReqService {
 
   async getAllOfferBuyReqs() {
     const reqs = await this.offerBuyReqRepo.find({
-      where: { approved: false },
+      relations: {
+        offer: true,
+      },
+      where: { reqStatus: ReqStatus.PENDING },
       select: {
         id: true,
         phone: true,
-      },
-      relations: {
-        offer: true,
+        offer: {
+          adminPrice: true,
+          title: true,
+          discountPrice: true,
+          regularPrice: true,
+        },
       },
       order: { createdAt: 'DESC' },
     });
@@ -124,7 +171,9 @@ export class OfferBuyReqService {
         id: req.id,
         phone: req.phone,
         title: req.offer.title,
-        price: req.offer.discountPrice,
+        regularPrice: req.offer.regularPrice,
+        adminPrice: req.offer.adminPrice,
+        discountPrice: req.offer.discountPrice,
       });
     });
 
@@ -138,14 +187,23 @@ export class OfferBuyReqService {
       relations: { offer: true },
     });
 
-    await this.userService.updateUserBalance({
-      phone: offerBuyReq.phone,
-      amount: offerBuyReq.offer.discountPrice,
-      balanceAction: Balance_Actions.INCREMENT,
-    });
     try {
-      await this.userHistoryService.deleteHistory(offerBuyReq.id);
-      await this.offerBuyReqRepo.delete(body.offerBuyReqId);
+      if (body.moderatorId) {
+        await this.offerBuyReqRepo.update(body.offerBuyReqId, {
+          reqStatus: ReqStatus.REJECTED,
+          moderator: body.moderatorId as any,
+        });
+      } else if (body.actionByAdmin) {
+        await this.offerBuyReqRepo.update(body.offerBuyReqId, {
+          reqStatus: ReqStatus.REJECTED,
+          actionBy: 'admin',
+        });
+      }
+      await this.userService.updateUserBalance({
+        phone: offerBuyReq.phone,
+        amount: offerBuyReq.offer.discountPrice,
+        balanceAction: Balance_Actions.INCREMENT,
+      });
 
       return createResponse({
         message: 'Rejected',
@@ -167,14 +225,14 @@ export class OfferBuyReqService {
 
       const offer = await this.offerService.getOfferDetails(body.offerId);
 
-      await this.userHistoryService.insertUserHistory({
-        amount: offer.discountPrice,
-        historyType: offer.category as any,
-        desc: offer.title || null,
-        phone: body.phone,
-        saved: offer.regularPrice - offer.discountPrice,
-        reqId: newReq.id,
-      });
+      // await this.userHistoryService.insertUserHistory({
+      //   amount: offer.discountPrice,
+      //   historyType: offer.category as any,
+      //   desc: offer.title || null,
+      //   phone: body.phone,
+      //   saved: offer.regularPrice - offer.discountPrice,
+      //   reqId: newReq.id,
+      // });
 
       await this.userService.updateUserBalance({
         phone: body.phone,
@@ -196,17 +254,21 @@ export class OfferBuyReqService {
     try {
       if (body.moderatorId) {
         await this.offerBuyReqRepo.update(body.offerBuyReqId, {
-          approved: body.approved,
+          reqStatus: ReqStatus.APPROVED,
           moderator: body.moderatorId as any,
         });
-      } else if (body.approvedBy) {
+      } else if (body.actionByAdmin) {
         await this.offerBuyReqRepo.update(body.offerBuyReqId, {
-          approved: body.approved,
-          approvedBy: 'admin',
+          reqStatus: ReqStatus.APPROVED,
+          actionBy: 'admin',
         });
-      } else {
-        return null;
       }
+
+      // await this.userHistoryService.updateHistoryReqStatus(
+      //   body.offerBuyReqId,
+      //   ReqStatus.APPROVED,
+      // );
+
       return createResponse({
         message: 'Updated',
         payload: undefined,
@@ -219,7 +281,26 @@ export class OfferBuyReqService {
 
   async getOfferReqCount() {
     return await this.offerBuyReqRepo.count({
-      where: { approved: false },
+      where: { reqStatus: ReqStatus.PENDING },
+    });
+  }
+
+  async getUserHistory(phone: string, date?) {
+    if (date) {
+      return await this.offerBuyReqRepo.find({
+        where: {
+          phone,
+          actionAt: Between(
+            new Date(date.year, date.month, date.day),
+            new Date(date.year, date.month, date.day + 1),
+          ),
+        },
+        relations: { offer: true },
+      });
+    }
+    return await this.offerBuyReqRepo.find({
+      where: { phone },
+      relations: { offer: true },
     });
   }
 }

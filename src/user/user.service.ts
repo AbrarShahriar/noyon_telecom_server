@@ -23,7 +23,7 @@ export class UserService {
   @InjectRepository(User)
   private readonly userRepo: Repository<User>;
 
-  constructor(private readonly userHistoryService: UserHistoryService) {}
+  // constructor(private readonly userHistoryService: UserHistoryService) {}
 
   async getUserFromReq(req: Request) {
     const userInfo = await this.userRepo.findOne({
@@ -37,27 +37,27 @@ export class UserService {
       },
     });
 
-    const stat = await this.userHistoryService.getTotalHistory(
-      (req.user as User).phone,
-    );
+    // const stat = await this.userHistoryService.getTotalHistory(
+    //   (req.user as User).phone,
+    // );
 
     let totalSaved = 0;
     let totalBought = 0;
     let totalSpent = 0;
 
-    stat.forEach((history) => {
-      if (
-        history.historyType == UserHistoryType.Bundle ||
-        history.historyType == UserHistoryType.Internet ||
-        history.historyType == UserHistoryType.Minute ||
-        history.historyType == UserHistoryType.Recharge
-      ) {
-        totalBought++;
-        totalSpent += history.amount;
-      }
+    // stat.forEach((history) => {
+    //   if (
+    //     history.historyType == UserHistoryType.Bundle ||
+    //     history.historyType == UserHistoryType.Internet ||
+    //     history.historyType == UserHistoryType.Minute ||
+    //     history.historyType == UserHistoryType.Recharge
+    //   ) {
+    //     totalBought++;
+    //     totalSpent += history.amount;
+    //   }
 
-      totalSaved += history.saved;
-    });
+    //   totalSaved += history.saved;
+    // });
 
     const data: any = { ...userInfo, totalBought, totalSaved, totalSpent };
 

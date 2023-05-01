@@ -26,14 +26,19 @@ export class OfferRejectReqDto {
   @IsNumber()
   @ApiProperty()
   offerBuyReqId?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @ApiProperty()
+  moderatorId?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  @ApiProperty()
+  actionByAdmin: boolean;
 }
 
 export class UpdateOfferBuyReqApprovedDto {
-  @IsNotEmpty()
-  @IsBoolean()
-  @ApiProperty()
-  approved: boolean;
-
   @IsNotEmpty()
   @IsNumber()
   @ApiProperty()
@@ -45,7 +50,7 @@ export class UpdateOfferBuyReqApprovedDto {
   moderatorId?: number;
 
   @IsOptional()
-  @IsString()
+  @IsBoolean()
   @ApiProperty()
-  approvedBy: string;
+  actionByAdmin: boolean;
 }

@@ -22,18 +22,12 @@ export class Moderator {
   @Column({ unique: true, nullable: true })
   password: string;
 
-  @OneToMany(() => TopupReq, (topupReq) => topupReq.moderator)
-  approvedTopupReqs: TopupReq[];
-
   @OneToMany(() => OfferBuyReq, (offerReq) => offerReq.moderator)
   approvedOfferReqs: OfferBuyReq[];
 
   @OneToMany(() => RechargeBuyReq, (rechargeReq) => rechargeReq.moderator)
   approvedRechargeReqs: RechargeBuyReq[];
 
-  @OneToMany(() => MembershipBuyReq, (membershipReq) => membershipReq.moderator)
-  approvedMembershipReqs: MembershipBuyReq[];
-
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 }

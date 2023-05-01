@@ -23,6 +23,7 @@ export class OfferService {
         title: true,
         expiration: true,
         category: true,
+        adminPrice: true,
         discountPrice: true,
         regularPrice: true,
       },

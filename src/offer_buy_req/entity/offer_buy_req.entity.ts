@@ -1,5 +1,6 @@
 import { Moderator } from 'src/moderator/entity/moderator.entity';
 import { Offer } from 'src/offer/entity/offer.entity';
+import { ReqStatus } from 'src/shared/enums/enums';
 import { UserHistory } from 'src/user_history/entity/user_history.entity';
 import {
   Entity,
@@ -8,8 +9,6 @@ import {
   UpdateDateColumn,
   ManyToOne,
   CreateDateColumn,
-  OneToOne,
-  JoinColumn,
 } from 'typeorm';
 
 @Entity('offer_buy_reqs')
@@ -20,14 +19,14 @@ export class OfferBuyReq {
   @Column({ nullable: false })
   phone: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
-  @Column({ default: false })
-  approved: boolean;
+  @Column({ enum: ReqStatus, type: 'enum', default: ReqStatus.PENDING })
+  reqStatus: ReqStatus;
 
   @Column({ nullable: true })
-  approvedBy: string;
+  actionBy: string;
 
   @ManyToOne(() => Moderator, (moderator) => moderator.approvedOfferReqs)
   moderator: Moderator;
@@ -35,6 +34,6 @@ export class OfferBuyReq {
   @ManyToOne(() => Offer, (offer) => offer.offerBuyReqs)
   offer: Offer;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  approvedAt!: Date;
+  @UpdateDateColumn({ type: 'timestamptz' })
+  actionAt!: Date;
 }

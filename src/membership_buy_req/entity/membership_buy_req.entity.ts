@@ -1,5 +1,5 @@
 import { Moderator } from 'src/moderator/entity/moderator.entity';
-import { PaymentMethod } from 'src/shared/enums/enums';
+import { PaymentMethod, ReqStatus } from 'src/shared/enums/enums';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -29,18 +29,15 @@ export class MembershipBuyReq {
   @Column()
   transactionId: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
-  @Column({ default: false })
-  approved: boolean;
+  @Column({ type: 'enum', enum: ReqStatus, default: ReqStatus.PENDING })
+  reqStatus: ReqStatus;
 
   @Column({ nullable: true })
-  approvedBy: string;
+  actionBy: string;
 
-  @ManyToOne(() => Moderator, (moderator) => moderator.approvedMembershipReqs)
-  moderator: Moderator;
-
-  @UpdateDateColumn({ type: 'timestamp' })
-  approvedAt!: Date;
+  @UpdateDateColumn({ type: 'timestamptz' })
+  actionAt!: Date;
 }

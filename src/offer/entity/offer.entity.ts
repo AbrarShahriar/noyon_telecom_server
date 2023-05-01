@@ -45,15 +45,18 @@ export class Offer {
   @Column({ default: 0 })
   discountPrice: number;
 
+  @Column({ default: 0 })
+  adminPrice: number;
+
   @Column({ nullable: true })
   expiration: string;
 
   @OneToMany(() => OfferBuyReq, (offerBuyReq) => offerBuyReq.offer)
   offerBuyReqs: OfferBuyReq[];
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 }

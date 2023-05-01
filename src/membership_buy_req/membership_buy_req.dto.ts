@@ -51,22 +51,7 @@ export class MembershipRejectReqDto {
 
 export class UpdateMembershipBuyReqApprovedDto {
   @IsNotEmpty()
-  @IsBoolean()
-  @ApiProperty()
-  approved: boolean;
-
-  @IsNotEmpty()
   @IsNumber()
   @ApiProperty()
   membershipBuyReqId: number;
-
-  @IsOptional()
-  @IsString()
-  @ApiProperty()
-  moderatorId?: number;
-
-  @IsOptional()
-  @IsString()
-  @ApiProperty()
-  approvedBy?: string;
 }

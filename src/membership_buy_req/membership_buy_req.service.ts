@@ -11,7 +11,7 @@ import { createResponse } from 'src/shared/error_handling/HttpResponse';
 import { UserService } from 'src/user/user.service';
 import { UserHistoryService } from 'src/user_history/user_history.service';
 import { UserHistoryType } from 'src/user_history/user_history.enum';
-import { PaymentMethod } from 'src/shared/enums/enums';
+import { PaymentMethod, ReqStatus } from 'src/shared/enums/enums';
 import { Balance_Actions } from 'src/user/user.enums';
 
 @Injectable()
@@ -19,49 +19,65 @@ export class MembershipBuyReqService {
   @InjectRepository(MembershipBuyReq)
   private readonly membershipBuyReqRepo: Repository<MembershipBuyReq>;
 
-  constructor(
-    private readonly userService: UserService,
-    private readonly userHistoryService: UserHistoryService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
-  async getApprovedMembershipBuyReqs(date?: any) {
+  async getApprovedMembershipBuyReq() {
+    return await this.membershipBuyReqRepo.find({
+      where: { reqStatus: ReqStatus.APPROVED },
+      select: { amount: true },
+    });
+  }
+
+  async getApprovedAndRejectedMembershipBuyReqs(date?: any) {
     if (date) {
       return await this.membershipBuyReqRepo.find({
-        where: {
-          approved: true,
-          approvedAt: Between(
-            new Date(date.year, date.month, date.day),
-            new Date(date.year, date.month, date.day + 1),
-          ),
-        },
+        where: [
+          {
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.APPROVED,
+          },
+          {
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.REJECTED,
+          },
+        ],
         select: {
-          approvedAt: true,
+          actionAt: true,
           userPhone: true,
-          approvedBy: true,
-          moderator: { username: true },
+          actionBy: true,
           amount: true,
+          reqStatus: true,
         },
-        relations: { moderator: true },
       });
     }
     return await this.membershipBuyReqRepo.find({
-      where: {
-        approved: true,
-      },
+      where: [
+        {
+          reqStatus: ReqStatus.APPROVED,
+        },
+        {
+          reqStatus: ReqStatus.REJECTED,
+        },
+      ],
       select: {
-        approvedAt: true,
+        actionAt: true,
         userPhone: true,
-        approvedBy: true,
-        moderator: { username: true },
+        actionBy: true,
         amount: true,
+        reqStatus: true,
       },
-      relations: { moderator: true },
     });
   }
 
   async getAllMembershipBuyReq() {
     return await this.membershipBuyReqRepo.find({
-      where: { approved: false },
+      where: { reqStatus: ReqStatus.PENDING },
       select: {
         id: true,
         userPhone: true,
@@ -82,6 +98,10 @@ export class MembershipBuyReqService {
     });
 
     try {
+      await this.membershipBuyReqRepo.update(membershipReq.id, {
+        reqStatus: ReqStatus.REJECTED,
+        actionBy: 'admin',
+      });
       if (membershipReq.paymentMethod == PaymentMethod.ACCOUNT_BALANCE) {
         await this.userService.updateUserBalance({
           phone: membershipReq.userPhone,
@@ -89,9 +109,6 @@ export class MembershipBuyReqService {
           balanceAction: Balance_Actions.INCREMENT,
         });
       }
-
-      await this.userHistoryService.deleteHistory(membershipReq.id);
-      await this.membershipBuyReqRepo.delete(body.membershipBuyReqId);
 
       return createResponse({
         message: 'Rejected',
@@ -104,12 +121,7 @@ export class MembershipBuyReqService {
   }
 
   async insertMembershipBuyReq(body: CreateMembershipBuyReqDto) {
-    const membershipBuyReq = this.membershipBuyReqRepo.create();
-    membershipBuyReq.userPhone = body.userPhone;
-    membershipBuyReq.amount = body.amount;
-    membershipBuyReq.paymentMethod = body.paymentMethod;
-    membershipBuyReq.paymentPhone = body.paymentPhone;
-    membershipBuyReq.transactionId = body.transactionId;
+    const membershipBuyReq = this.membershipBuyReqRepo.create(body);
 
     if (membershipBuyReq.paymentMethod == PaymentMethod.ACCOUNT_BALANCE) {
       await this.userService.updateUserBalance({
@@ -120,14 +132,8 @@ export class MembershipBuyReqService {
     }
 
     try {
-      let newReq = await this.membershipBuyReqRepo.save(membershipBuyReq);
-      await this.userHistoryService.insertUserHistory({
-        amount: body.amount,
-        phone: body.userPhone,
-        historyType: UserHistoryType.Membership,
-        transactionId: body.transactionId || null,
-        reqId: newReq.id,
-      });
+      await this.membershipBuyReqRepo.save(membershipBuyReq);
+
       return createResponse({
         message: 'Inserted',
         payload: undefined,
@@ -143,10 +149,9 @@ export class MembershipBuyReqService {
       where: { id: body.membershipBuyReqId },
     });
     try {
-      await this.membershipBuyReqRepo.save({
-        id: body.membershipBuyReqId,
-        approved: body.approved,
-        approvedBy: body.approvedBy,
+      await this.membershipBuyReqRepo.update(body.membershipBuyReqId, {
+        reqStatus: ReqStatus.APPROVED,
+        actionBy: 'admin',
       });
 
       await this.userService.updateUserMembership(req.userPhone);
@@ -171,7 +176,24 @@ export class MembershipBuyReqService {
 
   async getMembershipReqCount() {
     return await this.membershipBuyReqRepo.count({
-      where: { approved: false },
+      where: { reqStatus: ReqStatus.PENDING },
+    });
+  }
+
+  async getUserHistory(phone: string, date?) {
+    if (date) {
+      return await this.membershipBuyReqRepo.find({
+        where: {
+          userPhone: phone,
+          actionAt: Between(
+            new Date(date.year, date.month, date.day),
+            new Date(date.year, date.month, date.day + 1),
+          ),
+        },
+      });
+    }
+    return await this.membershipBuyReqRepo.find({
+      where: { userPhone: phone },
     });
   }
 }

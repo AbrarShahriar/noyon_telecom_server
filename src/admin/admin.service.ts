@@ -32,8 +32,17 @@ export class AdminService {
       let elToPush: any = {
         id: el.id,
         phone: el.phone || el.userPhone,
-        amount: el.amount || el.price,
       };
+
+      if (el.amount) {
+        elToPush.amount = el.amount;
+      }
+
+      if (el.regularPrice) {
+        elToPush.regularPrice = el.regularPrice;
+        elToPush.discountPrice = el.discountPrice;
+        elToPush.adminPrice = el.adminPrice;
+      }
 
       let paymentInfo = el.paymentPhone || null;
       if (paymentInfo) {
@@ -53,80 +62,71 @@ export class AdminService {
 
   async getTotalTransactionHistory() {
     const membershipReqs =
-      await this.membershipBuyReqService.getApprovedMembershipBuyReqs();
-    const topupReqs = await this.topupReqService.getApprovedTopupReqs();
+      await this.membershipBuyReqService.getApprovedAndRejectedMembershipBuyReqs();
+    const topupReqs =
+      await this.topupReqService.getApprovedAndRejectedTopupReqs();
     const offerBuyReqs =
-      await this.offerBuyReqService.getApprovedOfferBuyReqs();
+      await this.offerBuyReqService.getApprovedAndRejectedOfferBuyReqs();
     const rechargeBuyReqs =
-      await this.rechargeReqService.getApprovedRechargeBuyReqs();
+      await this.rechargeReqService.getApprovedAndRejectedRechargeBuyReqs();
 
     const formattedData: any = [];
 
     membershipReqs.forEach((req) => {
-      let approvedBy = '';
-      if (req.approvedBy) {
-        approvedBy = req.approvedBy;
-      } else if (req.moderator) {
-        approvedBy = req.moderator.username;
-      }
-
       formattedData.push({
         type: 'membership',
         userPhone: req.userPhone,
         amount: req.amount,
-        approvedBy: approvedBy,
-        approvedAt: req.approvedAt,
+        actionBy: 'admin',
+        actionAt: req.actionAt,
+        reqStatus: req.reqStatus,
       });
     });
 
     topupReqs.forEach((req) => {
-      let approvedBy = '';
-      if (req.approvedBy) {
-        approvedBy = req.approvedBy;
-      } else if (req.moderator) {
-        approvedBy = req.moderator.username;
-      }
-
       formattedData.push({
         type: 'topup',
         userPhone: req.userPhone,
         amount: req.amount,
-        approvedBy: approvedBy,
-        approvedAt: req.approvedAt,
+        actionBy: 'admin',
+        actionAt: req.actionAt,
+        reqStatus: req.reqStatus,
       });
     });
 
     offerBuyReqs.forEach((req) => {
-      let approvedBy = '';
-      if (req.approvedBy) {
-        approvedBy = req.approvedBy;
+      let actionBy = '';
+      if (req.actionBy) {
+        actionBy = req.actionBy;
       } else if (req.moderator) {
-        approvedBy = req.moderator.username;
+        actionBy = req.moderator.username;
       }
 
       formattedData.push({
         type: req.offer.category,
         userPhone: req.phone,
         amount: req.offer.discountPrice,
-        approvedBy: approvedBy,
-        approvedAt: req.approvedAt,
+        actionBy: actionBy,
+        actionAt: req.actionAt,
+        reqStatus: req.reqStatus,
       });
     });
 
     rechargeBuyReqs.forEach((req) => {
-      let approvedBy = '';
-      if (req.approvedBy) {
-        approvedBy = req.approvedBy;
+      let actionBy = '';
+      if (req.actionBy) {
+        actionBy = req.actionBy;
       } else if (req.moderator) {
-        approvedBy = req.moderator.username;
+        actionBy = req.moderator.username;
       }
 
       formattedData.push({
-        type: 'membership',
+        type: 'recharge',
         userPhone: req.phone,
         amount: req.amount,
-        approvedBy: approvedBy,
-        approvedAt: req.approvedAt,
+        actionBy: actionBy,
+        actionAt: req.actionAt,
+        reqStatus: req.reqStatus,
       });
     });
 
@@ -142,85 +142,77 @@ export class AdminService {
     };
 
     const membershipReqs =
-      await this.membershipBuyReqService.getApprovedMembershipBuyReqs(
+      await this.membershipBuyReqService.getApprovedAndRejectedMembershipBuyReqs(
         queryDate,
       );
-    const topupReqs = await this.topupReqService.getApprovedTopupReqs(
-      queryDate,
-    );
-    const offerBuyReqs = await this.offerBuyReqService.getApprovedOfferBuyReqs(
-      queryDate,
-    );
+    const topupReqs =
+      await this.topupReqService.getApprovedAndRejectedTopupReqs(queryDate);
+    const offerBuyReqs =
+      await this.offerBuyReqService.getApprovedAndRejectedOfferBuyReqs(
+        queryDate,
+      );
     const rechargeBuyReqs =
-      await this.rechargeReqService.getApprovedRechargeBuyReqs(queryDate);
+      await this.rechargeReqService.getApprovedAndRejectedRechargeBuyReqs(
+        queryDate,
+      );
 
     const formattedData: any = [];
 
     membershipReqs.forEach((req) => {
-      let approvedBy = '';
-      if (req.approvedBy) {
-        approvedBy = req.approvedBy;
-      } else if (req.moderator) {
-        approvedBy = req.moderator.username;
-      }
-
       formattedData.push({
         type: 'membership',
         userPhone: req.userPhone,
         amount: req.amount,
-        approvedBy: approvedBy,
-        approvedAt: req.approvedAt,
+        actionBy: 'admin',
+        approvedAt: req.actionAt,
+        reqStatus: req.reqStatus,
       });
     });
 
     topupReqs.forEach((req) => {
-      let approvedBy = '';
-      if (req.approvedBy) {
-        approvedBy = req.approvedBy;
-      } else if (req.moderator) {
-        approvedBy = req.moderator.username;
-      }
-
       formattedData.push({
         type: 'topup',
         userPhone: req.userPhone,
         amount: req.amount,
-        approvedBy: approvedBy,
-        approvedAt: req.approvedAt,
+        actionBy: 'admin',
+        actionAt: req.actionAt,
+        reqStatus: req.reqStatus,
       });
     });
 
     offerBuyReqs.forEach((req) => {
-      let approvedBy = '';
-      if (req.approvedBy) {
-        approvedBy = req.approvedBy;
+      let actionBy = '';
+      if (req.actionBy) {
+        actionBy = req.actionBy;
       } else if (req.moderator) {
-        approvedBy = req.moderator.username;
+        actionBy = req.moderator.username;
       }
 
       formattedData.push({
         type: req.offer.category,
         userPhone: req.phone,
         amount: req.offer.discountPrice,
-        approvedBy: approvedBy,
-        approvedAt: req.approvedAt,
+        actionBy: actionBy,
+        actionAt: req.actionAt,
+        reqStatus: req.reqStatus,
       });
     });
 
     rechargeBuyReqs.forEach((req) => {
-      let approvedBy = '';
-      if (req.approvedBy) {
-        approvedBy = req.approvedBy;
+      let actionBy = '';
+      if (req.actionBy) {
+        actionBy = req.actionBy;
       } else if (req.moderator) {
-        approvedBy = req.moderator.username;
+        actionBy = req.moderator.username;
       }
 
       formattedData.push({
-        type: 'membership',
+        type: 'recharge',
         userPhone: req.phone,
         amount: req.amount,
-        approvedBy: approvedBy,
-        approvedAt: req.approvedAt,
+        actionBy: actionBy,
+        actionAt: req.actionAt,
+        reqStatus: req.reqStatus,
       });
     });
 
@@ -229,12 +221,13 @@ export class AdminService {
 
   async getTotalInOut() {
     const approvedMembershipReqs =
-      await this.membershipBuyReqService.getApprovedMembershipBuyReqs();
-    const approvedTopupReqs = await this.topupReqService.getApprovedTopupReqs();
+      await this.membershipBuyReqService.getApprovedMembershipBuyReq();
+    const approvedTopupReqs =
+      await this.topupReqService.getApproveTopupBuyReq();
     const approvedOfferBuyReqs =
-      await this.offerBuyReqService.getApprovedOfferBuyReqs();
+      await this.offerBuyReqService.getApprovedOfferBuyReq();
     const approvedRechargeBuyReqs =
-      await this.rechargeReqService.getApprovedRechargeBuyReqs();
+      await this.rechargeReqService.getApprovedAndRejectedRechargeBuyReqs();
 
     let inVal = 0;
     let outVal = 0;
@@ -247,7 +240,7 @@ export class AdminService {
     });
 
     approvedOfferBuyReqs.forEach((req) => {
-      outVal += req.offer.discountPrice;
+      outVal += req.offer.adminPrice;
     });
     approvedRechargeBuyReqs.forEach((req) => {
       outVal += req.amount;

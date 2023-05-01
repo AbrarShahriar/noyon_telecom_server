@@ -12,6 +12,7 @@ import { UserHistoryService } from 'src/user_history/user_history.service';
 import { UserHistoryType } from 'src/user_history/user_history.enum';
 import { UserService } from 'src/user/user.service';
 import { Balance_Actions } from 'src/user/user.enums';
+import { ReqStatus } from 'src/shared/enums/enums';
 
 @Injectable()
 export class TopupReqService {
@@ -19,52 +20,85 @@ export class TopupReqService {
   private readonly topupReqRepo: Repository<TopupReq>;
 
   constructor(
-    private readonly userHistoryService: UserHistoryService,
+    // private readonly userHistoryService: UserHistoryService,
     private readonly userService: UserService,
   ) {}
 
-  async getApprovedTopupReqs(date?) {
+  async getApproveTopupBuyReq() {
+    return await this.topupReqRepo.find({
+      where: { reqStatus: ReqStatus.APPROVED },
+      select: { amount: true },
+    });
+  }
+
+  async getApprovedAndRejectedTopupReqs(date?) {
     if (date) {
       return await this.topupReqRepo.find({
-        where: {
-          approved: true,
-          approvedAt: Between(
-            new Date(date.year, date.month, date.day),
-            new Date(date.year, date.month, date.day + 1),
-          ),
-        },
+        where: [
+          {
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.APPROVED,
+          },
+          {
+            actionAt: Between(
+              new Date(date.year, date.month, date.day),
+              new Date(date.year, date.month, date.day + 1),
+            ),
+            reqStatus: ReqStatus.REJECTED,
+          },
+        ],
         select: {
-          approvedAt: true,
-          approvedBy: true,
+          actionAt: true,
           userPhone: true,
-          moderator: { username: true },
           amount: true,
+          reqStatus: true,
         },
-        relations: { moderator: true },
       });
     }
     return await this.topupReqRepo.find({
-      where: {
-        approved: true,
-      },
+      where: [
+        {
+          reqStatus: ReqStatus.APPROVED,
+        },
+        {
+          reqStatus: ReqStatus.REJECTED,
+        },
+      ],
       select: {
-        approvedAt: true,
-        approvedBy: true,
+        actionAt: true,
         userPhone: true,
-        moderator: { username: true },
         amount: true,
+        reqStatus: true,
       },
-      relations: { moderator: true },
     });
   }
 
   async getAllTopupReqs() {
     return await this.topupReqRepo.find({
       where: {
-        approved: false,
+        reqStatus: ReqStatus.PENDING,
       },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async insertTopupReq(body: CreateTopupReqDto) {
+    const newTopupReq = this.topupReqRepo.create(body);
+
+    try {
+      await this.topupReqRepo.save(newTopupReq);
+
+      return createResponse({
+        message: 'Inserter Topup Req',
+        payload: undefined,
+        error: '',
+      });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async rejectReq(body: TopupRejectReqDto) {
@@ -73,8 +107,9 @@ export class TopupReqService {
     });
 
     try {
-      await this.userHistoryService.deleteHistory(topupReq.id);
-      await this.topupReqRepo.delete(topupReq.id);
+      await this.topupReqRepo.update(topupReq.id, {
+        reqStatus: ReqStatus.REJECTED,
+      });
 
       return createResponse({
         message: 'Rejected',
@@ -86,44 +121,17 @@ export class TopupReqService {
     }
   }
 
-  async insertTopupReq(body: CreateTopupReqDto) {
-    const newTopupReq = this.topupReqRepo.create();
-
-    newTopupReq.amount = body.amount;
-    newTopupReq.userPhone = body.userPhone;
-    newTopupReq.paymentMethod = body.paymentMethod;
-    newTopupReq.paymentPhone = body.paymentPhone;
-    newTopupReq.transactionId = body.transactionId;
-
-    let newReq = await this.topupReqRepo.save(newTopupReq);
-    await this.userHistoryService.insertUserHistory({
-      amount: body.amount,
-      historyType: UserHistoryType.Topup,
-      phone: body.userPhone,
-      transactionId: body.transactionId,
-      reqId: newReq.id,
-    });
-
-    return createResponse({
-      message: 'created',
-      payload: newTopupReq,
-      error: '',
-    });
-  }
-
   async updateTopupReqStatus(body: TopupReqApprovedDto) {
     let req = await this.topupReqRepo.findOne({ where: { id: body.id } });
     try {
-      await this.topupReqRepo.save({
-        id: req.id,
-        approved: true,
-        approvedBy: body.approvedBy,
-      });
+      await this.topupReqRepo.update(req.id, { reqStatus: ReqStatus.APPROVED });
+
       await this.userService.updateUserBalance({
         phone: body.userPhone,
         amount: req.amount,
         balanceAction: Balance_Actions.INCREMENT,
       });
+
       return createResponse({
         message: 'updated',
         payload: undefined,
@@ -136,7 +144,24 @@ export class TopupReqService {
 
   async getTopupReqCount() {
     return await this.topupReqRepo.count({
-      where: { approved: false },
+      where: { reqStatus: ReqStatus.PENDING },
+    });
+  }
+
+  async getUserHistory(phone: string, date?) {
+    if (date) {
+      return await this.topupReqRepo.find({
+        where: {
+          userPhone: phone,
+          actionAt: Between(
+            new Date(date.year, date.month, date.day),
+            new Date(date.year, date.month, date.day + 1),
+          ),
+        },
+      });
+    }
+    return await this.topupReqRepo.find({
+      where: { userPhone: phone },
     });
   }
 }

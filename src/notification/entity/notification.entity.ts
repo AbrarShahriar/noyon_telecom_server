@@ -16,6 +16,6 @@ export class Notification {
   @Column({ nullable: true })
   desc?: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 }
