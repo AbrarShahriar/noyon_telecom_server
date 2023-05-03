@@ -37,7 +37,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         AdminSetting,
         Notification,
       ],
-      ssl: false,
+      ssl: true,
       migrations: ['dist/migrations/*.{ts,js}'],
       migrationsTableName: 'migrations',
       logging: true,
