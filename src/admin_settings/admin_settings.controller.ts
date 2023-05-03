@@ -24,8 +24,9 @@ export class AdminSettingsController {
     return this.adminSettingsService.getAdminSettings();
   }
 
-  @Patch()
+  @Public()
   @UseGuards(AdminGuard)
+  @Patch()
   updateSetting(@Body() body: UpdateAdminSettingsDto) {
     return this.adminSettingsService.updateSetting(body);
   }
