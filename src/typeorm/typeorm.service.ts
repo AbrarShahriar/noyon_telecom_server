@@ -23,7 +23,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       type: 'postgres',
       // host: this.config.get<string>('DB_HOST'),
       // port: this.config.get<number>('DB_PORT'),
-      url: this.config.get<string>('DB_DEV_URL'),
+      url: this.config.get<string>('DB_PROD_URL'),
       entities: [
         User,
         Offer,
