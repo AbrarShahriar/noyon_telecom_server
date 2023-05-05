@@ -29,6 +29,14 @@ export class CreateUserDto {
   pin: string;
 }
 
+export class VerifyPinDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  @Length(6, 6, { message: 'Pin Number Has To Be 6 Character Long' })
+  pin: string;
+}
+
 export class GetUserDto {
   @ApiProperty()
   name: string;

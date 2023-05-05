@@ -10,8 +10,9 @@ import { GetReqsDto } from './admin.dto';
 import { OfferBuyReq } from 'src/offer_buy_req/entity/offer_buy_req.entity';
 import { RechargeBuyReq } from 'src/recharge_buy_req/entity/recharge_buy_req.entity';
 import { TopupReq } from 'src/topup_req/entity/topup_req.entity';
-import e, { query } from 'express';
-import { UserHistoryService } from 'src/user_history/user_history.service';
+import { UserService } from 'src/user/user.service';
+import { WithdrawReqService } from 'src/withdraw_req/withdraw_req.service';
+import { WithdrawReq } from 'src/withdraw_req/entity/withdraw.entity';
 
 @Injectable()
 export class AdminService {
@@ -20,11 +21,17 @@ export class AdminService {
     private readonly offerBuyReqService: OfferBuyReqService,
     private readonly rechargeReqService: RechargeBuyReqService,
     private readonly topupReqService: TopupReqService,
-    private readonly userHistoryService: UserHistoryService,
+    private readonly userService: UserService,
+    private readonly withdrawReqService: WithdrawReqService,
   ) {}
 
   protected parseReqDataBasedOnType(
-    data: OfferBuyReq[] | MembershipBuyReq[] | RechargeBuyReq[] | TopupReq[],
+    data:
+      | OfferBuyReq[]
+      | MembershipBuyReq[]
+      | RechargeBuyReq[]
+      | TopupReq[]
+      | WithdrawReq[],
   ): GetReqsDto[] {
     let formattedData = [];
 
@@ -33,6 +40,10 @@ export class AdminService {
         id: el.id,
         phone: el.phone || el.userPhone,
       };
+
+      if (el.simcard) {
+        elToPush.simcard = el.simcard;
+      }
 
       if (el.amount) {
         elToPush.amount = el.amount;
@@ -48,10 +59,18 @@ export class AdminService {
       if (paymentInfo) {
         elToPush.paymentPhone = el.paymentPhone;
         elToPush.paymentMethod = el.paymentMethod;
-        elToPush.transactionId = el.transactionId;
+        elToPush.transactionId = el.transactionId || undefined;
       }
       if (el.title) {
         elToPush.title = el.title;
+      }
+
+      if (el.sendTo) {
+        elToPush.sendTo = el.sendTo;
+      }
+
+      if (el.moderator) {
+        elToPush.moderator = el.moderator;
       }
 
       formattedData.push(elToPush);
@@ -69,6 +88,8 @@ export class AdminService {
       await this.offerBuyReqService.getApprovedAndRejectedOfferBuyReqs();
     const rechargeBuyReqs =
       await this.rechargeReqService.getApprovedAndRejectedRechargeBuyReqs();
+    const withdrawReqs =
+      await this.withdrawReqService.getApprovedAndRejectedWithdrawReqs();
 
     const formattedData: any = [];
 
@@ -126,6 +147,17 @@ export class AdminService {
         amount: req.amount,
         actionBy: actionBy,
         actionAt: req.actionAt,
+        reqStatus: req.reqStatus,
+      });
+    });
+
+    withdrawReqs.forEach((req) => {
+      formattedData.push({
+        type: 'withdraw',
+        moderator: req.moderator.username,
+        amount: req.amount,
+        actionBy: 'admin',
+        actionAt: req.createdAt,
         reqStatus: req.reqStatus,
       });
     });
@@ -155,6 +187,10 @@ export class AdminService {
       await this.rechargeReqService.getApprovedAndRejectedRechargeBuyReqs(
         queryDate,
       );
+    const withdrawReqs =
+      await this.withdrawReqService.getApprovedAndRejectedWithdrawReqs(
+        queryDate,
+      );
 
     const formattedData: any = [];
 
@@ -164,7 +200,7 @@ export class AdminService {
         userPhone: req.userPhone,
         amount: req.amount,
         actionBy: 'admin',
-        approvedAt: req.actionAt,
+        actionAt: req.actionAt,
         reqStatus: req.reqStatus,
       });
     });
@@ -216,39 +252,44 @@ export class AdminService {
       });
     });
 
+    withdrawReqs.forEach((req) => {
+      formattedData.push({
+        type: 'withdraw',
+        moderator: req.moderator.username,
+        amount: req.amount,
+        actionBy: 'admin',
+        actionAt: req.createdAt,
+        reqStatus: req.reqStatus,
+      });
+    });
+
     return formattedData;
   }
 
   async getTotalInOut() {
-    const approvedMembershipReqs =
-      await this.membershipBuyReqService.getApprovedMembershipBuyReq();
-    const approvedTopupReqs =
-      await this.topupReqService.getApproveTopupBuyReq();
+    // const approvedMembershipReqs =  await this.membershipBuyReqService.getApprovedMembershipBuyReq();
+    // const approvedTopupReqs = await this.topupReqService.getApproveTopupBuyReq();
+    // const approvedRechargeBuyReqs =await this.rechargeReqService.getApprovedAndRejectedRechargeBuyReqs();
+
     const approvedOfferBuyReqs =
       await this.offerBuyReqService.getApprovedOfferBuyReq();
-    const approvedRechargeBuyReqs =
-      await this.rechargeReqService.getApprovedAndRejectedRechargeBuyReqs();
+    const userBalance = await this.userService.getAllUserBalance();
+    const totalRecharge =
+      await this.rechargeReqService.getTotalAmountOfRechargeBuyReqs();
 
     let inVal = 0;
     let outVal = 0;
 
-    approvedMembershipReqs.forEach((req) => {
-      inVal += req.amount;
-    });
-    approvedTopupReqs.forEach((req) => {
-      inVal += req.amount;
-    });
-
     approvedOfferBuyReqs.forEach((req) => {
+      inVal += req.offer.discountPrice;
       outVal += req.offer.adminPrice;
-    });
-    approvedRechargeBuyReqs.forEach((req) => {
-      outVal += req.amount;
     });
 
     return {
       inVal,
       outVal,
+      userBalance,
+      totalRecharge,
     };
   }
 
@@ -258,12 +299,14 @@ export class AdminService {
     let offerReqCount = await this.offerBuyReqService.getOfferReqCount();
     let rechargeReqCount = await this.rechargeReqService.getRechargeReqCount();
     let topupReqCount = await this.topupReqService.getTopupReqCount();
+    let withdrawReqCount = await this.withdrawReqService.getWithdrawReqCount();
 
     return {
       membershipReqCount,
       offerReqCount,
       rechargeReqCount,
       topupReqCount,
+      withdrawReqCount,
     };
   }
 
@@ -288,6 +331,14 @@ export class AdminService {
         return this.parseReqDataBasedOnType(
           await this.topupReqService.getAllTopupReqs(),
         );
+
+      case ReqType.Withdraw:
+        return this.parseReqDataBasedOnType(
+          await this.withdrawReqService.getAllPendingReqs(),
+        );
+
+      default:
+        return [];
     }
   }
 }

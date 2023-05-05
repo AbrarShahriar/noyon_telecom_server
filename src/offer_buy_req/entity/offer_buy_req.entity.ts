@@ -19,6 +19,9 @@ export class OfferBuyReq {
   @Column({ nullable: false })
   phone: string;
 
+  @Column({ nullable: true })
+  sendTo: string;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 

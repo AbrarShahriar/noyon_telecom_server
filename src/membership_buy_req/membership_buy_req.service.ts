@@ -94,7 +94,7 @@ export class MembershipBuyReqService {
   async rejectReq(body: MembershipRejectReqDto) {
     const membershipReq = await this.membershipBuyReqRepo.findOne({
       where: { id: body.membershipBuyReqId },
-      select: { id: true, amount: true, paymentMethod: true },
+      select: { id: true, amount: true, paymentMethod: true, userPhone: true },
     });
 
     try {
@@ -102,13 +102,13 @@ export class MembershipBuyReqService {
         reqStatus: ReqStatus.REJECTED,
         actionBy: 'admin',
       });
-      if (membershipReq.paymentMethod == PaymentMethod.ACCOUNT_BALANCE) {
-        await this.userService.updateUserBalance({
-          phone: membershipReq.userPhone,
-          amount: membershipReq.amount,
-          balanceAction: Balance_Actions.INCREMENT,
-        });
-      }
+      console.log(membershipReq);
+
+      await this.userService.updateUserBalance({
+        phone: membershipReq.userPhone,
+        amount: membershipReq.amount,
+        balanceAction: Balance_Actions.INCREMENT,
+      });
 
       return createResponse({
         message: 'Rejected',
@@ -187,7 +187,7 @@ export class MembershipBuyReqService {
           userPhone: phone,
           actionAt: Between(
             new Date(date.year, date.month, date.day),
-            new Date(date.year, date.month, date.day + 1),
+            new Date(date.year, date.month + 1, date.day),
           ),
         },
       });

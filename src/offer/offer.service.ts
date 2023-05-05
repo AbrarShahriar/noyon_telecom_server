@@ -54,6 +54,7 @@ export class OfferService {
     simcard: SIMCARD,
     category: OfferCategory,
     expiry: string,
+    vip: boolean,
   ) {
     let query = {
       simcard: simcard || null,
@@ -63,7 +64,7 @@ export class OfferService {
 
     return await this.OfferRepo.find({
       where: {
-        isPremium: false,
+        isPremium: vip,
         ...query,
       },
     });

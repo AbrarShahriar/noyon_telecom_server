@@ -17,6 +17,12 @@ export class CreateRechargeBuyReqDto {
   phone: string;
 
   @IsNotEmpty()
+  @IsString()
+  @Length(11)
+  @ApiProperty()
+  sendTo: string;
+
+  @IsNotEmpty()
   @IsNumber()
   @IsPositive()
   @ApiProperty()

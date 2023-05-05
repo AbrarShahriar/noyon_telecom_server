@@ -55,7 +55,27 @@ export class OfferController {
     @Query('category') category: OfferCategory,
     @Query('expiry') expiry: string,
   ) {
-    return this.offerService.getOffersBasedOnFilter(simcard, category, expiry);
+    return this.offerService.getOffersBasedOnFilter(
+      simcard,
+      category,
+      expiry,
+      false,
+    );
+  }
+
+  @Public()
+  @Get('/all/vip/query')
+  getVipOffersBasedOnFilter(
+    @Query('sim') simcard: SIMCARD,
+    @Query('category') category: OfferCategory,
+    @Query('expiry') expiry: string,
+  ) {
+    return this.offerService.getOffersBasedOnFilter(
+      simcard,
+      category,
+      expiry,
+      true,
+    );
   }
 
   @Public()

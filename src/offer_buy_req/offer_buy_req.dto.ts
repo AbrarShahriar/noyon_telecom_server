@@ -16,6 +16,12 @@ export class CreateOfferBuyReqDto {
   phone: string;
 
   @IsNotEmpty()
+  @IsString()
+  @Length(11)
+  @ApiProperty()
+  sendTo: string;
+
+  @IsNotEmpty()
   @IsNumber()
   @ApiProperty()
   offerId: number;

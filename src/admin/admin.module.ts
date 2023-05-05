@@ -11,14 +11,17 @@ import { MembershipBuyReqModule } from 'src/membership_buy_req/membership_buy_re
 import { OfferBuyReqModule } from 'src/offer_buy_req/offer_buy_req.module';
 import { RechargeBuyReqModule } from 'src/recharge_buy_req/recharge_buy_req.module';
 import { TopupReqModule } from 'src/topup_req/topup_req.module';
+import { UserModule } from 'src/user/user.module';
+import { WithdrawReqModule } from 'src/withdraw_req/withdraw_req.module';
 
 @Module({
   imports: [
-    UserHistoryModule,
+    UserModule,
     MembershipBuyReqModule,
     OfferBuyReqModule,
     RechargeBuyReqModule,
     TopupReqModule,
+    WithdrawReqModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

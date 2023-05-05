@@ -17,6 +17,7 @@ import { UserHistoryModule } from './user_history/user_history.module';
 import { AdminSettingsModule } from './admin_settings/admin_settings.module';
 import { AdminModule } from './admin/admin.module';
 import { NotificationModule } from './notification/notification.module';
+import { WithdrawReqModule } from './withdraw_req/withdraw_req.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { NotificationModule } from './notification/notification.module';
     AdminSettingsModule,
     AdminModule,
     NotificationModule,
+    WithdrawReqModule,
   ],
   controllers: [AppController],
   providers: [AppService],

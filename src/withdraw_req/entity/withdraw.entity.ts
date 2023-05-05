@@ -1,24 +1,26 @@
 import { Moderator } from 'src/moderator/entity/moderator.entity';
-import { ReqStatus } from 'src/shared/enums/enums';
+import { PaymentMethod, ReqStatus } from 'src/shared/enums/enums';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  UpdateDateColumn,
   CreateDateColumn,
   ManyToOne,
 } from 'typeorm';
 
-@Entity('recharge_buy_reqs')
-export class RechargeBuyReq {
+@Entity('withdraw_reqs')
+export class WithdrawReq {
   @PrimaryGeneratedColumn('increment')
   id!: number;
 
-  @Column({ nullable: false })
-  phone: string;
+  @ManyToOne(() => Moderator, (moderator) => moderator.withdraws)
+  moderator: Moderator;
 
   @Column({ nullable: true })
-  sendTo: string;
+  paymentPhone: string;
+
+  @Column({ type: 'enum', enum: PaymentMethod, nullable: true })
+  paymentMethod: PaymentMethod;
 
   @Column()
   amount: number;
@@ -28,13 +30,4 @@ export class RechargeBuyReq {
 
   @Column({ type: 'enum', enum: ReqStatus, default: ReqStatus.PENDING })
   reqStatus: ReqStatus;
-
-  @Column({ nullable: true })
-  actionBy: string;
-
-  @ManyToOne(() => Moderator, (moderator) => moderator.approvedRechargeReqs)
-  moderator: Moderator;
-
-  @UpdateDateColumn({ type: 'timestamptz' })
-  actionAt!: Date;
 }

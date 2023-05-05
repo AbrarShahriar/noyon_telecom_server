@@ -154,11 +154,13 @@ export class OfferBuyReqService {
       select: {
         id: true,
         phone: true,
+        sendTo: true,
         offer: {
           adminPrice: true,
           title: true,
           discountPrice: true,
           regularPrice: true,
+          simcard: true,
         },
       },
       order: { createdAt: 'DESC' },
@@ -174,6 +176,8 @@ export class OfferBuyReqService {
         regularPrice: req.offer.regularPrice,
         adminPrice: req.offer.adminPrice,
         discountPrice: req.offer.discountPrice,
+        sendTo: req.sendTo,
+        simcard: req.offer.simcard,
       });
     });
 
@@ -218,21 +222,13 @@ export class OfferBuyReqService {
   async insertOfferBuyReq(body: CreateOfferBuyReqDto) {
     const offerBuyReq = this.offerBuyReqRepo.create();
     offerBuyReq.phone = body.phone;
+    offerBuyReq.sendTo = body.sendTo;
     offerBuyReq.offer = { id: body.offerId } as any;
 
     try {
       let newReq = await this.offerBuyReqRepo.save(offerBuyReq);
 
       const offer = await this.offerService.getOfferDetails(body.offerId);
-
-      // await this.userHistoryService.insertUserHistory({
-      //   amount: offer.discountPrice,
-      //   historyType: offer.category as any,
-      //   desc: offer.title || null,
-      //   phone: body.phone,
-      //   saved: offer.regularPrice - offer.discountPrice,
-      //   reqId: newReq.id,
-      // });
 
       await this.userService.updateUserBalance({
         phone: body.phone,
@@ -292,7 +288,7 @@ export class OfferBuyReqService {
           phone,
           actionAt: Between(
             new Date(date.year, date.month, date.day),
-            new Date(date.year, date.month, date.day + 1),
+            new Date(date.year, date.month + 1, date.day),
           ),
         },
         relations: { offer: true },

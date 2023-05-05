@@ -3,4 +3,5 @@ export enum ReqType {
   Offer = 'offer',
   Recharge = 'recharge',
   Topup = 'topup',
+  Withdraw = 'withdraw',
 }

@@ -16,6 +16,7 @@ import { MembershipBuyReqService } from 'src/membership_buy_req/membership_buy_r
 import { OfferBuyReqService } from 'src/offer_buy_req/offer_buy_req.service';
 import { RechargeBuyReqService } from 'src/recharge_buy_req/recharge_buy_req.service';
 import { TopupReqService } from 'src/topup_req/topup_req.service';
+import { WithdrawReqService } from 'src/withdraw_req/withdraw_req.service';
 
 @Injectable()
 export class ModeratorService {
@@ -26,6 +27,7 @@ export class ModeratorService {
     private readonly configService: ConfigService,
     private readonly offerBuyReqService: OfferBuyReqService,
     private readonly rechargeReqService: RechargeBuyReqService,
+    private readonly withdrawReqService: WithdrawReqService,
   ) {}
 
   async getModeratorInAndOut(moderatorId: number) {
@@ -33,19 +35,21 @@ export class ModeratorService {
       await this.offerBuyReqService.getApprovedOfferBuyReqsOfModerator(
         moderatorId,
       );
-    const rechargeBuyReqs =
+    const rechargeReqs =
       await this.rechargeReqService.getApprovedRechargeBuyReqsOfModerator(
         moderatorId,
       );
 
     let inVal = 0;
-    let outVal = 0;
+    let outVal =
+      (await this.withdrawReqService.getModeratorOutValue(moderatorId)) || 0;
 
     offerBuyReqs.forEach((req) => {
-      outVal += req.offer.discountPrice;
+      inVal += req.offer.adminPrice;
     });
-    rechargeBuyReqs.forEach((req) => {
-      outVal += req.amount;
+
+    rechargeReqs.forEach((req) => {
+      inVal += req.amount;
     });
 
     return {

@@ -12,12 +12,18 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreateUserDto, GetUserDto, UpdateUserBalanceDto } from './user.dto';
+import {
+  CreateUserDto,
+  GetUserDto,
+  UpdateUserBalanceDto,
+  VerifyPinDto,
+} from './user.dto';
 import { UserService } from './user.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/shared/security/PublicEndpoint';
 import { Request } from 'express';
 import { AdminGuard } from 'src/shared/guards/admin.guard';
+import { User } from './entity/user.entity';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @ApiTags('user')
@@ -34,6 +40,14 @@ export class UserController {
   @Get('/info')
   getUserInfo(@Req() req: Request) {
     return this.userService.getUserFromReq(req);
+  }
+
+  @Post('/verify-pin')
+  verifyPin(@Body() body: VerifyPinDto, @Req() req: Request) {
+    return this.userService.verifyPin(
+      body.pin,
+      (req.user as User).phone as string,
+    );
   }
 
   @Public()

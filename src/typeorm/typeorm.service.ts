@@ -12,6 +12,7 @@ import { RechargeBuyReq } from 'src/recharge_buy_req/entity/recharge_buy_req.ent
 import { TopupReq } from 'src/topup_req/entity/topup_req.entity';
 import { User } from 'src/user/entity/user.entity';
 import { UserHistory } from 'src/user_history/entity/user_history.entity';
+import { WithdrawReq } from 'src/withdraw_req/entity/withdraw.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -23,7 +24,9 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       type: 'postgres',
       // host: this.config.get<string>('DB_HOST'),
       // port: this.config.get<number>('DB_PORT'),
+      // url: this.config.get<string>('DB_DEV_URL'),
       url: this.config.get<string>('DB_PROD_URL'),
+      ssl: true,
       entities: [
         User,
         Offer,
@@ -36,8 +39,8 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         UserHistory,
         AdminSetting,
         Notification,
+        WithdrawReq,
       ],
-      ssl: true,
       migrations: ['dist/migrations/*.{ts,js}'],
       migrationsTableName: 'migrations',
       logging: true,

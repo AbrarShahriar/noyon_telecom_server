@@ -9,21 +9,40 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto, GetUserDto, UpdateUserBalanceDto } from './user.dto';
+import {
+  CreateUserDto,
+  GetUserDto,
+  UpdateUserBalanceDto,
+  VerifyPinDto,
+} from './user.dto';
 import {
   HttpResponse,
   createResponse,
 } from 'src/shared/error_handling/HttpResponse';
 import { Balance_Actions, Subscription } from './user.enums';
 import { Request } from 'express';
-import { UserHistoryService } from 'src/user_history/user_history.service';
-import { UserHistoryType } from 'src/user_history/user_history.enum';
+import { OfferBuyReq } from 'src/offer_buy_req/entity/offer_buy_req.entity';
+import { ReqStatus } from 'src/shared/enums/enums';
 @Injectable()
 export class UserService {
   @InjectRepository(User)
   private readonly userRepo: Repository<User>;
 
-  // constructor(private readonly userHistoryService: UserHistoryService) {}
+  @InjectRepository(OfferBuyReq)
+  private readonly offerBuyReqRepo: Repository<OfferBuyReq>;
+
+  async verifyPin(pin: string, phone: string) {
+    let user = await this.getUserByPhone(phone);
+
+    let pinMatch = await bcrypt.compare(pin, user.pin);
+    if (pinMatch) {
+      return {
+        success: true,
+      };
+    } else {
+      return { success: false };
+    }
+  }
 
   async getUserFromReq(req: Request) {
     const userInfo = await this.userRepo.findOne({
@@ -37,29 +56,33 @@ export class UserService {
       },
     });
 
-    // const stat = await this.userHistoryService.getTotalHistory(
-    //   (req.user as User).phone,
-    // );
+    const stats = await this.offerBuyReqRepo.find({
+      relations: { offer: true },
+      where: [
+        { phone: userInfo.phone, reqStatus: ReqStatus.PENDING },
+        { phone: userInfo.phone, reqStatus: ReqStatus.APPROVED },
+      ],
+      select: {
+        offer: {
+          discountPrice: true,
+          regularPrice: true,
+        },
+      },
+    });
 
-    let totalSaved = 0;
     let totalBought = 0;
     let totalSpent = 0;
 
-    // stat.forEach((history) => {
-    //   if (
-    //     history.historyType == UserHistoryType.Bundle ||
-    //     history.historyType == UserHistoryType.Internet ||
-    //     history.historyType == UserHistoryType.Minute ||
-    //     history.historyType == UserHistoryType.Recharge
-    //   ) {
-    //     totalBought++;
-    //     totalSpent += history.amount;
-    //   }
+    stats.forEach((stat) => {
+      totalBought += stat.offer.regularPrice;
+      totalSpent += stat.offer.discountPrice;
+    });
 
-    //   totalSaved += history.saved;
-    // });
-
-    const data: any = { ...userInfo, totalBought, totalSaved, totalSpent };
+    const data: any = {
+      ...userInfo,
+      totalBought,
+      totalSpent,
+    };
 
     return data;
   }
@@ -88,6 +111,13 @@ export class UserService {
     });
   }
 
+  async getAllUserBalance() {
+    let userBalance = 0;
+    const users = await this.userRepo.find({ select: { balance: true } });
+    users.forEach((user) => (userBalance += user.balance));
+    return userBalance;
+  }
+
   async createUser(body: CreateUserDto): Promise<HttpResponse> {
     const userExists = await this.getUserByPhone(body.phone);
 
@@ -114,6 +144,8 @@ export class UserService {
   }
 
   async updateUserBalance(body: UpdateUserBalanceDto) {
+    console.log(body);
+
     let user = null;
     if (body.id) {
       user = await this.userRepo.findOne({ where: { id: body.id } });
