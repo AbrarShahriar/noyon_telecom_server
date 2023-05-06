@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Inject,
+  Param,
   Patch,
   Post,
   UseGuards,
@@ -22,6 +23,20 @@ export class WithdrawReqController {
   @Get('/pending')
   getPendingReqs() {
     return this.withdrawReqService.getAllPendingReqs();
+  }
+
+  @Public()
+  @UseGuards(AdminGuard)
+  @Get('/all/:moderatorId')
+  getReqsHistory(@Param('moderatorId') moderatorId: number) {
+    return this.withdrawReqService.getAllHistoryOfModerator(moderatorId);
+  }
+
+  @Public()
+  @UseGuards(AdminGuard)
+  @Get('/all')
+  getAllReqsHistory() {
+    return this.withdrawReqService.getAllHistory();
   }
 
   @Public()

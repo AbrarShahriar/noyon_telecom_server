@@ -11,6 +11,41 @@ export class WithdrawReqService {
   @InjectRepository(WithdrawReq)
   private readonly withdrawReqRepo: Repository<WithdrawReq>;
 
+  async getAllHistoryOfModerator(moderatorId: number) {
+    return await this.withdrawReqRepo.find({
+      loadEagerRelations: false,
+      relations: { moderator: true },
+      where: { moderator: { id: moderatorId } },
+      select: {
+        moderator: {
+          username: true,
+          password: false,
+          approvedRechargeReqs: false,
+          approvedOfferReqs: false,
+          withdraws: false,
+        },
+      },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getAllHistory() {
+    return await this.withdrawReqRepo.find({
+      loadEagerRelations: false,
+      relations: { moderator: true },
+      select: {
+        moderator: {
+          username: true,
+          password: false,
+          approvedRechargeReqs: false,
+          approvedOfferReqs: false,
+          withdraws: false,
+        },
+      },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async getAllPendingReqs() {
     let formattedData = [];
 
@@ -59,6 +94,8 @@ export class WithdrawReqService {
   }
 
   async updateReq(body: UpdateWithdrawReqDto) {
+    console.log(body);
+
     try {
       await this.withdrawReqRepo.update(body.reqId, {
         reqStatus: body.reqStatus,

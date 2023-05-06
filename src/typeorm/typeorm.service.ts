@@ -22,9 +22,9 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
   public createTypeOrmOptions(): TypeOrmModuleOptions {
     return {
       type: 'postgres',
-      // url: this.config.get<string>('DB_DEV_URL'),
-      url: this.config.get<string>('DB_PROD_URL'),
-      ssl: true,
+      url: this.config.get<string>('DB_DEV_URL'),
+      // url: this.config.get<string>('DB_PROD_URL'),
+      ssl: false,
       entities: [
         User,
         Offer,

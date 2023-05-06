@@ -37,7 +37,6 @@ export class ModeratorService {
         approvedRechargeReqs: true,
         withdraws: true,
       },
-      cache: 1000 * 60 * 2,
       select: {
         id: true,
         username: true,

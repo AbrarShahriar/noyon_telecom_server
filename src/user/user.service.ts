@@ -114,7 +114,7 @@ export class UserService {
   async getAllUserBalance() {
     let userBalance = 0;
     const users = await this.userRepo.find({ select: { balance: true } });
-    users.forEach((user) => (userBalance += user.balance));
+    users.forEach((user) => (userBalance += Number(user.balance)));
     return userBalance;
   }
 
