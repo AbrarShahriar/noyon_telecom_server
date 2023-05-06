@@ -30,6 +30,48 @@ export class ModeratorService {
     private readonly withdrawReqService: WithdrawReqService,
   ) {}
 
+  async getAllModeratorInAndOut() {
+    const moderators = await this.moderatorRepo.find({
+      relations: {
+        approvedOfferReqs: { offer: true },
+        approvedRechargeReqs: true,
+        withdraws: true,
+      },
+      cache: 1000 * 60 * 2,
+      select: {
+        id: true,
+        username: true,
+        createdAt: true,
+        approvedOfferReqs: { offer: { adminPrice: true } },
+        approvedRechargeReqs: { amount: true },
+        withdraws: { amount: true },
+      },
+    });
+
+    let formattedData: any = [];
+
+    moderators.forEach((moderator) => {
+      let inVal = 0;
+      let outVal = 0;
+
+      moderator.approvedOfferReqs.forEach(
+        (req) => (inVal += req.offer.adminPrice),
+      );
+      moderator.approvedRechargeReqs.forEach((req) => (inVal += req.amount));
+      moderator.withdraws.forEach((req) => (outVal += req.amount));
+
+      formattedData.push({
+        username: moderator.username,
+        id: moderator.id,
+        createdAt: moderator.createdAt,
+        inVal,
+        outVal,
+      });
+    });
+
+    return formattedData;
+  }
+
   async getModeratorInAndOut(moderatorId: number) {
     const offerBuyReqs =
       await this.offerBuyReqService.getApprovedOfferBuyReqsOfModerator(

@@ -144,9 +144,9 @@ export class UserService {
   }
 
   async updateUserBalance(body: UpdateUserBalanceDto) {
-    console.log(body);
+    console.log(Number(body.amount));
 
-    let user = null;
+    let user: User | null = null;
     if (body.id) {
       user = await this.userRepo.findOne({ where: { id: body.id } });
     } else if (body.phone) {
@@ -155,17 +155,18 @@ export class UserService {
       return user;
     }
 
-    let newBalance = user.balance;
+    let newBalance = Number(user.balance);
+    console.log('newBalance', newBalance, typeof newBalance);
 
     switch (body.balanceAction) {
       case Balance_Actions.INCREMENT:
-        newBalance += body.amount;
+        newBalance += Number(body.amount);
         break;
       case Balance_Actions.DECREMENT:
-        if (user.balance - body.amount < 0) {
+        if (user.balance - Number(body.amount) < 0) {
           throw new HttpException('Insufficient Balance', HttpStatus.FORBIDDEN);
         } else {
-          newBalance -= body.amount;
+          newBalance -= Number(body.amount);
         }
         break;
 
@@ -173,6 +174,8 @@ export class UserService {
         newBalance = user.balance;
         break;
     }
+
+    console.log(newBalance);
 
     try {
       return await this.userRepo.save({

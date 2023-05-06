@@ -64,3 +64,30 @@ export class CreateOfferDTO {
   @ApiProperty()
   expiration: string;
 }
+
+export class UpdateOfferDto {
+  @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty()
+  id: number;
+
+  @IsOptional()
+  @IsNumber()
+  @ApiPropertyOptional()
+  adminPrice?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @ApiPropertyOptional()
+  discountPrice?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @ApiPropertyOptional()
+  regularPrice?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  @ApiPropertyOptional()
+  showOffer?: boolean;
+}

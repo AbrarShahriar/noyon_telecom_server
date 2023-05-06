@@ -59,4 +59,7 @@ export class Offer {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
+
+  @Column({ default: true })
+  showOffer: boolean;
 }

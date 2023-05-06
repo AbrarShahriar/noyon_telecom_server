@@ -22,8 +22,6 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
   public createTypeOrmOptions(): TypeOrmModuleOptions {
     return {
       type: 'postgres',
-      // host: this.config.get<string>('DB_HOST'),
-      // port: this.config.get<number>('DB_PORT'),
       // url: this.config.get<string>('DB_DEV_URL'),
       url: this.config.get<string>('DB_PROD_URL'),
       ssl: true,
@@ -44,7 +42,9 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       migrations: ['dist/migrations/*.{ts,js}'],
       migrationsTableName: 'migrations',
       logging: true,
+      cache: true,
       synchronize: this.config.get<boolean>('DB_SYNC'), // never use TRUE in production!
+      // synchronize: true, // never use TRUE in production!
     };
   }
 }

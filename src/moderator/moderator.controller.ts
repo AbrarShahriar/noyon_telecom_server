@@ -36,6 +36,13 @@ export class ModeratorController {
 
   @Public()
   @UseGuards(AdminGuard)
+  @Get('/all/in-out')
+  async getAllModeratorInOut() {
+    return this.moderatorService.getAllModeratorInAndOut();
+  }
+
+  @Public()
+  @UseGuards(AdminGuard)
   @Get('/total-in-out/:moderatorId')
   async getModeratorInAndOut(@Param('moderatorId') moderatorId: number) {
     return this.moderatorService.getModeratorInAndOut(moderatorId);

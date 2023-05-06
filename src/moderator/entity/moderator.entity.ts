@@ -23,7 +23,9 @@ export class Moderator {
   @Column({ unique: true, nullable: true })
   password: string;
 
-  @OneToMany(() => OfferBuyReq, (offerReq) => offerReq.moderator)
+  @OneToMany(() => OfferBuyReq, (offerReq) => offerReq.moderator, {
+    eager: true,
+  })
   approvedOfferReqs: OfferBuyReq[];
 
   @OneToMany(() => RechargeBuyReq, (rechargeReq) => rechargeReq.moderator)

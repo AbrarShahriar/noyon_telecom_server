@@ -15,7 +15,7 @@ export class TopupReq {
   @PrimaryGeneratedColumn('increment')
   id!: number;
 
-  @Column({ nullable: false })
+  @Column('decimal', { precision: 5, scale: 1, nullable: true })
   amount: number;
 
   @Column({ nullable: false })

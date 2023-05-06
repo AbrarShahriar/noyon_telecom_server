@@ -21,7 +21,7 @@ export class User {
   @Column({ unique: false, nullable: true })
   pin: string;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 5, scale: 1, default: 0 })
   balance: number;
 
   @Column({

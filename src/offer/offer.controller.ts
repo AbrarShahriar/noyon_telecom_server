@@ -5,12 +5,13 @@ import {
   Get,
   Inject,
   Param,
+  Patch,
   Post,
   Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { CreateOfferDTO } from './offer.dto';
+import { CreateOfferDTO, UpdateOfferDto } from './offer.dto';
 import { OfferService } from './offer.service';
 import { OfferCategory, OfferType, SIMCARD } from './offer.enums';
 import { ApiTags } from '@nestjs/swagger';
@@ -34,6 +35,12 @@ export class OfferController {
   @Get('/all/vip')
   getVipOffers() {
     return this.offerService.getVipOffers();
+  }
+
+  @Public()
+  @Get('/all/non-vip')
+  getNonVipOffers() {
+    return this.offerService.getNonVipOffers();
   }
 
   @Public()
@@ -87,8 +94,8 @@ export class OfferController {
 
   @Public()
   @UseGuards(AdminGuard)
-  @Delete('/delete/:id')
-  deleteOffer(@Param('id') id: number) {
-    return this.offerService.deleteOffer(id);
+  @Patch('/update')
+  updateOffer(@Body() body: UpdateOfferDto) {
+    return this.offerService.updateOffer(body);
   }
 }

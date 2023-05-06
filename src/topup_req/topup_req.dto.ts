@@ -1,9 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
+  IsDecimal,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
+  IsNumberString,
   IsOptional,
   IsString,
   Length,
@@ -18,9 +22,8 @@ export class TopupRejectReqDto {
 }
 
 export class CreateTopupReqDto {
-  @IsNotEmpty()
-  @IsNumber()
   @ApiProperty()
+  @IsNotEmpty()
   amount: number;
 
   @IsNotEmpty()

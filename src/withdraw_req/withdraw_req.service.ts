@@ -99,6 +99,13 @@ export class WithdrawReqService {
     return sum;
   }
 
+  async getApprovedWithdrawReqs() {
+    return await this.withdrawReqRepo.find({
+      where: { reqStatus: ReqStatus.APPROVED },
+      select: { amount: true },
+    });
+  }
+
   async getApprovedAndRejectedWithdrawReqs(date?) {
     if (date) {
       return await this.withdrawReqRepo.find({

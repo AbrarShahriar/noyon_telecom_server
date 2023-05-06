@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Offer } from './entity/offer.entity';
 import { Repository } from 'typeorm';
-import { CreateOfferDTO } from './offer.dto';
+import { CreateOfferDTO, UpdateOfferDto } from './offer.dto';
 import { OfferCategory, OfferType, SIMCARD } from './offer.enums';
 import {
   HttpResponse,
@@ -24,7 +24,9 @@ export class OfferService {
         expiration: true,
         category: true,
         adminPrice: true,
+        desc: true,
         discountPrice: true,
+        simcard: true,
         regularPrice: true,
       },
     });
@@ -33,20 +35,31 @@ export class OfferService {
   async getVipOffers() {
     return await this.OfferRepo.find({
       where: {
+        showOffer: true,
         isPremium: true,
       },
+      order: { createdAt: 'DESC' },
+    });
+  }
+  async getNonVipOffers() {
+    return await this.OfferRepo.find({
+      where: {
+        isPremium: false,
+        showOffer: true,
+      },
+      order: { createdAt: 'DESC' },
     });
   }
 
   async getOffersByType(type: OfferType) {
     return await this.OfferRepo.find({
-      where: { type },
+      where: { type, showOffer: true },
     });
   }
 
   async getOffersByCategory(category: OfferCategory) {
     return await this.OfferRepo.find({
-      where: { category },
+      where: { category, showOffer: true },
     });
   }
 
@@ -64,6 +77,7 @@ export class OfferService {
 
     return await this.OfferRepo.find({
       where: {
+        showOffer: true,
         isPremium: vip,
         ...query,
       },
@@ -85,11 +99,11 @@ export class OfferService {
     }
   }
 
-  async deleteOffer(id: number): Promise<HttpResponse> {
+  async updateOffer(body: UpdateOfferDto) {
     try {
-      await this.OfferRepo.delete(id);
+      await this.OfferRepo.update(body.id, { ...body });
       return createResponse({
-        message: 'Offer Deleted',
+        message: 'Updated',
         payload: undefined,
         error: '',
       });
