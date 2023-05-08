@@ -9,8 +9,6 @@ import {
 } from './membership_buy_req.dto';
 import { createResponse } from 'src/shared/error_handling/HttpResponse';
 import { UserService } from 'src/user/user.service';
-import { UserHistoryService } from 'src/user_history/user_history.service';
-import { UserHistoryType } from 'src/user_history/user_history.enum';
 import { PaymentMethod, ReqStatus } from 'src/shared/enums/enums';
 import { Balance_Actions } from 'src/user/user.enums';
 
@@ -20,6 +18,15 @@ export class MembershipBuyReqService {
   private readonly membershipBuyReqRepo: Repository<MembershipBuyReq>;
 
   constructor(private readonly userService: UserService) {}
+
+  async checkIfReqAlreadyMade(userPhone: string) {
+    return await this.membershipBuyReqRepo.findOne({
+      where: [
+        { userPhone, reqStatus: ReqStatus.PENDING },
+        { userPhone, reqStatus: ReqStatus.APPROVED },
+      ],
+    });
+  }
 
   async getApprovedMembershipBuyReq() {
     return await this.membershipBuyReqRepo.find({
@@ -102,7 +109,6 @@ export class MembershipBuyReqService {
         reqStatus: ReqStatus.REJECTED,
         actionBy: 'admin',
       });
-      console.log(membershipReq);
 
       await this.userService.updateUserBalance({
         phone: membershipReq.userPhone,
@@ -121,6 +127,16 @@ export class MembershipBuyReqService {
   }
 
   async insertMembershipBuyReq(body: CreateMembershipBuyReqDto) {
+    const reqAlreadyMade = await this.checkIfReqAlreadyMade(body.userPhone);
+
+    if (reqAlreadyMade) {
+      return createResponse({
+        message: 'Request Already Made!',
+        payload: undefined,
+        error: 'Conflict',
+      });
+    }
+
     const membershipBuyReq = this.membershipBuyReqRepo.create(body);
 
     if (membershipBuyReq.paymentMethod == PaymentMethod.ACCOUNT_BALANCE) {
@@ -135,7 +151,7 @@ export class MembershipBuyReqService {
       await this.membershipBuyReqRepo.save(membershipBuyReq);
 
       return createResponse({
-        message: 'Inserted',
+        message: 'Request Made!',
         payload: undefined,
         error: '',
       });

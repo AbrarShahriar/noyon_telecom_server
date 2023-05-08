@@ -142,7 +142,7 @@ export class ModeratorService {
       formattedData.push({
         type: req.offer.category,
         userPhone: req.phone,
-        amount: req.offer.discountPrice,
+        amount: req.offer.adminPrice,
         actionBy: actionBy,
         actionAt: req.actionAt,
         reqStatus: req.reqStatus,

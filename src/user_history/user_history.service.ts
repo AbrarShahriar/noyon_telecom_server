@@ -57,7 +57,7 @@ export class UserHistoryService {
     topupHistory.forEach((el) =>
       formattedData.push({
         historyType: UserHistoryType.Topup,
-        amount: el.amount,
+        amount: Number(el.amount),
         saved: 0,
         historyStatus: el.reqStatus,
         transactionId: el.transactionId,
@@ -109,7 +109,7 @@ export class UserHistoryService {
     topupHistory.forEach((el) =>
       formattedData.push({
         historyType: UserHistoryType.Topup,
-        amount: el.amount,
+        amount: Number(el.amount),
         saved: 0,
         historyStatus: el.reqStatus,
         transactionId: el.transactionId,

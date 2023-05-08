@@ -77,9 +77,9 @@ export class OfferService {
 
     return await this.OfferRepo.find({
       where: {
+        ...query,
         showOffer: true,
         isPremium: vip,
-        ...query,
       },
     });
   }

@@ -239,14 +239,10 @@ export class RechargeBuyReqService {
     let sum = 0;
 
     const rechargeReqs = await this.rechargeBuyReqRepo.find({
-      where: [
-        {
-          reqStatus: ReqStatus.PENDING,
-        },
-        {
-          reqStatus: ReqStatus.APPROVED,
-        },
-      ],
+      where: {
+        reqStatus: ReqStatus.APPROVED,
+      },
+
       select: { amount: true },
     });
 

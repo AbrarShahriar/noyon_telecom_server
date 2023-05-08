@@ -267,12 +267,14 @@ export class AdminService {
   }
 
   async getTotalInOut() {
-    // const approvedMembershipReqs =  await this.membershipBuyReqService.getApprovedMembershipBuyReq();
     // const approvedTopupReqs = await this.topupReqService.getApproveTopupBuyReq();
-    // const approvedRechargeBuyReqs =await this.rechargeReqService.getApprovedAndRejectedRechargeBuyReqs();
 
+    const approvedMembershipReqs =
+      await this.membershipBuyReqService.getApprovedMembershipBuyReq();
     const approvedOfferBuyReqs =
       await this.offerBuyReqService.getApprovedOfferBuyReq();
+    const approvedRechargeBuyReqs =
+      await this.rechargeReqService.getApprovedRechargepBuyReq();
     const userBalance = await this.userService.getAllUserBalance();
     const totalRecharge =
       await this.rechargeReqService.getTotalAmountOfRechargeBuyReqs();
@@ -283,6 +285,15 @@ export class AdminService {
     approvedOfferBuyReqs.forEach((req) => {
       inVal += req.offer.discountPrice;
       outVal += req.offer.adminPrice;
+    });
+
+    approvedRechargeBuyReqs.forEach((req) => {
+      inVal += req.amount;
+      outVal += req.amount;
+    });
+
+    approvedMembershipReqs.forEach((req) => {
+      outVal += req.amount;
     });
 
     return {

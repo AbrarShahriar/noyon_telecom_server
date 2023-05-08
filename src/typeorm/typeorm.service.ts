@@ -20,11 +20,17 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
   private readonly config: ConfigService;
 
   public createTypeOrmOptions(): TypeOrmModuleOptions {
+    const dbConfig = (key: 'DB_PROD_URL' | 'DB_DEV_URL' = 'DB_DEV_URL') => ({
+      url: this.config.get<string>(key),
+      ssl: key == 'DB_PROD_URL' ? true : false,
+    });
+
+    const config = dbConfig();
+
     return {
       type: 'postgres',
-      // url: this.config.get<string>('DB_DEV_URL'),
-      url: this.config.get<string>('DB_PROD_URL'),
-      ssl: true,
+      url: config.url,
+      ssl: config.ssl,
       entities: [
         User,
         Offer,
