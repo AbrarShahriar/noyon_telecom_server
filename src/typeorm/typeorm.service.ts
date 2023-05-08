@@ -25,7 +25,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       ssl: key == 'DB_PROD_URL' ? true : false,
     });
 
-    const config = dbConfig();
+    const config = dbConfig('DB_PROD_URL');
 
     return {
       type: 'postgres',
