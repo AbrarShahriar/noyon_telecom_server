@@ -293,6 +293,7 @@ export class AdminService {
     });
 
     approvedMembershipReqs.forEach((req) => {
+      inVal += req.amount;
       outVal += req.amount;
     });
 

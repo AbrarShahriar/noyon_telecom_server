@@ -172,14 +172,6 @@ export class MembershipBuyReqService {
 
       await this.userService.updateUserMembership(req.userPhone);
 
-      if (req.paymentMethod == PaymentMethod.ACCOUNT_BALANCE) {
-        await this.userService.updateUserBalance({
-          amount: req.amount,
-          phone: req.userPhone,
-          balanceAction: Balance_Actions.DECREMENT,
-        });
-      }
-
       return createResponse({
         message: 'Updated',
         payload: undefined,
