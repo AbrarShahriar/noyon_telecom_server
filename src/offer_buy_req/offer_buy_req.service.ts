@@ -155,11 +155,13 @@ export class OfferBuyReqService {
         id: true,
         phone: true,
         sendTo: true,
+        actionAt: true,
         offer: {
           adminPrice: true,
           title: true,
           discountPrice: true,
           regularPrice: true,
+          isPremium: true,
           simcard: true,
         },
       },
@@ -178,6 +180,8 @@ export class OfferBuyReqService {
         discountPrice: req.offer.discountPrice,
         sendTo: req.sendTo,
         simcard: req.offer.simcard,
+        isPremium: req.offer.isPremium,
+        actionAt: req.actionAt,
       });
     });
 

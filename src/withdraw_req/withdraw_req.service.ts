@@ -56,6 +56,7 @@ export class WithdrawReqService {
         amount: true,
         id: true,
         paymentMethod: true,
+        createdAt: true,
         paymentPhone: true,
       },
       where: { reqStatus: ReqStatus.PENDING },
@@ -67,6 +68,7 @@ export class WithdrawReqService {
         amount: req.amount,
         paymentPhone: req.paymentPhone,
         paymentMethod: req.paymentMethod,
+        actionAt: req.createdAt,
         moderator: req.moderator.username,
       });
     });

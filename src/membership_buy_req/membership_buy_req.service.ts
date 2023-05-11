@@ -90,6 +90,8 @@ export class MembershipBuyReqService {
         userPhone: true,
         amount: true,
         createdAt: true,
+        actionAt: true,
+
         paymentMethod: true,
         paymentPhone: true,
         transactionId: true,

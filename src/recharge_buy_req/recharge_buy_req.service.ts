@@ -229,6 +229,8 @@ export class RechargeBuyReqService {
         id: true,
         phone: true,
         sendTo: true,
+        actionAt: true,
+
         amount: true,
       },
       order: { createdAt: 'DESC' },

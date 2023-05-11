@@ -49,6 +49,14 @@ export class AdminService {
         elToPush.amount = el.amount;
       }
 
+      console.log(el);
+
+      if (el.hasOwnProperty('isPremium')) {
+        elToPush.isPremium = el.isPremium;
+      }
+
+      elToPush.actionAt = el.actionAt;
+
       if (el.regularPrice) {
         elToPush.regularPrice = el.regularPrice;
         elToPush.discountPrice = el.discountPrice;
