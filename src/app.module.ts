@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -18,11 +18,25 @@ import { AdminSettingsModule } from './admin_settings/admin_settings.module';
 import { AdminModule } from './admin/admin.module';
 import { NotificationModule } from './notification/notification.module';
 import { WithdrawReqModule } from './withdraw_req/withdraw_req.module';
+import { LoggerMiddleware } from './shared/middleware/logger.middleware';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            colorize: true, // colorizes the log
+            translateTime: 'dd-mm-yyyy, h:MM:ss TT',
+            singleLine: true,
+          },
+        },
+      },
+    }),
     AuthModule,
     UserModule,
     OfferModule,
@@ -41,4 +55,8 @@ import { WithdrawReqModule } from './withdraw_req/withdraw_req.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

@@ -11,13 +11,17 @@ import { createResponse } from 'src/shared/error_handling/HttpResponse';
 import { UserService } from 'src/user/user.service';
 import { PaymentMethod, ReqStatus } from 'src/shared/enums/enums';
 import { Balance_Actions } from 'src/user/user.enums';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MembershipBuyReqService {
   @InjectRepository(MembershipBuyReq)
   private readonly membershipBuyReqRepo: Repository<MembershipBuyReq>;
 
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async checkIfReqAlreadyMade(userPhone: string) {
     return await this.membershipBuyReqRepo.findOne({
@@ -151,6 +155,31 @@ export class MembershipBuyReqService {
 
     try {
       await this.membershipBuyReqRepo.save(membershipBuyReq);
+
+      const apiKey = this.configService.get<string>('ONESIGNAL_API_KEY');
+      const appId = this.configService.get<string>('ONESIGNAL_APP_ID');
+
+      fetch('https://onesignal.com/api/v1/notifications', {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          app_id: appId,
+          filters: [
+            { field: 'tag', key: 'role', relation: '=', value: 'admin' },
+          ],
+          headings: { en: 'IMPORTANT!' },
+          contents: {
+            en: 'New Membership Request!!',
+          },
+          name: 'MEMBERSHIP',
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => console.log(data))
+        .catch((err) => console.error(err));
 
       return createResponse({
         message: 'Request Made!',

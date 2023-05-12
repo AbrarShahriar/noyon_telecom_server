@@ -14,6 +14,7 @@ import { UserHistoryType } from '../user_history/user_history.enum';
 import { UserService } from 'src/user/user.service';
 import { Balance_Actions } from 'src/user/user.enums';
 import { ReqStatus } from 'src/shared/enums/enums';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class OfferBuyReqService {
@@ -22,8 +23,8 @@ export class OfferBuyReqService {
 
   constructor(
     private readonly offerService: OfferService,
-    // private readonly userHistoryService: UserHistoryService,
     private readonly userService: UserService,
+    private readonly configService: ConfigService,
   ) {}
 
   async getApprovedOfferBuyReq() {
@@ -240,6 +241,33 @@ export class OfferBuyReqService {
         balanceAction: Balance_Actions.DECREMENT,
       });
 
+      const apiKey = this.configService.get<string>('ONESIGNAL_API_KEY');
+      const appId = this.configService.get<string>('ONESIGNAL_APP_ID');
+
+      fetch('https://onesignal.com/api/v1/notifications', {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          app_id: appId,
+          filters: [
+            { field: 'tag', key: 'role', relation: '=', value: 'admin' },
+            { operator: 'OR' },
+            { field: 'tag', key: 'role', relation: '=', value: 'moderator' },
+          ],
+          headings: { en: 'IMPORTANT!' },
+          contents: {
+            en: 'New Offer Buy Request!!',
+          },
+          name: 'OFFER',
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => console.log(data))
+        .catch((err) => console.error(err));
+
       return createResponse({
         message: 'Inserted',
         payload: undefined,
@@ -263,11 +291,6 @@ export class OfferBuyReqService {
           actionBy: 'admin',
         });
       }
-
-      // await this.userHistoryService.updateHistoryReqStatus(
-      //   body.offerBuyReqId,
-      //   ReqStatus.APPROVED,
-      // );
 
       return createResponse({
         message: 'Updated',

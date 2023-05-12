@@ -9,14 +9,15 @@ import * as passport from 'passport';
 import * as compression from 'compression';
 import helmet from 'helmet';
 import { JwtGuard } from './auth/guards/jwt.guard';
+import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
   const config: ConfigService = app.get(ConfigService);
   const port: number = config.get<number>('PORT');
-  const origin: string = config.get<string>('CLIENT');
 
+  app.useLogger(app.get(Logger));
   app.use(cookieParser());
   app.use(passport.initialize());
   app.use(compression());
