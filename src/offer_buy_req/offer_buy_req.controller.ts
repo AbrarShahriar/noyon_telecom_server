@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { OfferBuyReqService } from './offer_buy_req.service';
@@ -17,6 +18,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/shared/security/PublicEndpoint';
 import { AdminGuard } from 'src/shared/guards/admin.guard';
+import { Request } from 'express';
 
 @ApiTags('offer buy req')
 @Controller('offer-buy-req')
@@ -37,8 +39,8 @@ export class OfferBuyReqController {
   }
 
   @Post()
-  insertOfferBuyReq(@Body() body: CreateOfferBuyReqDto) {
-    return this.offerBuyReqService.insertOfferBuyReq(body);
+  insertOfferBuyReq(@Body() body: CreateOfferBuyReqDto, @Req() req: Request) {
+    return this.offerBuyReqService.insertOfferBuyReq(body, req);
   }
 
   @Public()

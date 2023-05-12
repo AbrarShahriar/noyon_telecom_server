@@ -289,6 +289,7 @@ export class AdminService {
 
     let inVal = 0;
     let outVal = 0;
+    let totalMembershipReq = 0;
 
     approvedOfferBuyReqs.forEach((req) => {
       inVal += req.offer.discountPrice;
@@ -301,8 +302,7 @@ export class AdminService {
     });
 
     approvedMembershipReqs.forEach((req) => {
-      inVal += req.amount;
-      outVal += req.amount;
+      totalMembershipReq += req.amount;
     });
 
     return {
@@ -310,6 +310,7 @@ export class AdminService {
       outVal,
       userBalance,
       totalRecharge,
+      totalMembershipReq,
     };
   }
 

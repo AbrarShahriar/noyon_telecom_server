@@ -15,6 +15,7 @@ import { UserService } from 'src/user/user.service';
 import { Balance_Actions } from 'src/user/user.enums';
 import { ReqStatus } from 'src/shared/enums/enums';
 import { ConfigService } from '@nestjs/config';
+import { Request } from 'express';
 
 @Injectable()
 export class OfferBuyReqService {
@@ -224,7 +225,7 @@ export class OfferBuyReqService {
     }
   }
 
-  async insertOfferBuyReq(body: CreateOfferBuyReqDto) {
+  async insertOfferBuyReq(body: CreateOfferBuyReqDto, req: Request) {
     const offerBuyReq = this.offerBuyReqRepo.create();
     offerBuyReq.phone = body.phone;
     offerBuyReq.sendTo = body.sendTo;

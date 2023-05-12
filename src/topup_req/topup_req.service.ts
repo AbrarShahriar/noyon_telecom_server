@@ -111,7 +111,7 @@ export class TopupReqService {
           contents: {
             en: 'New Topup Request!!',
           },
-          name: 'INTERNAL_CAMPAIGN_NAME',
+          name: 'TOPUP',
         }),
       })
         .then((res) => res.json())
